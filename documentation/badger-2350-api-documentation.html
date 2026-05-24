@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DOCUMENTATION</title>
+<style>
+:root{
+  --page-bg:#f5f6f7;--bg:#ffffff;--text:#24292f;--muted:#57606a;
+  --heading:#1a1c20;--link:#0969da;--link-hover:#0550ae;
+  --code-bg:#f6f8fa;--code-text:#1a1c20;--pre-bg:#f6f8fa;
+  --border:#d0d7de;--bq-border:#d0d7de;--bq-text:#57606a;
+  --toc-bg:#f6f8fa;--toc-border:#d0d7de;
+  --header-bg:#ffffff;--shadow:0 1px 3px rgba(0,0,0,.08);
+  --btn-bg:#f6f8fa;--btn-border:#d0d7de;--btn-hover:#eaeef2;
+  --table-head:#f6f8fa;--table-border:#d0d7de;--table-alt:#f6f8fa;
+  --radius:6px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --dur:.2s;
+}
+[data-theme="dark"]{
+  --page-bg:#0d1117;--bg:#161b22;--text:#c9d1d9;--muted:#8b949e;
+  --heading:#f0f6fc;--link:#58a6ff;--link-hover:#79c0ff;
+  --code-bg:#21262d;--code-text:#c9d1d9;--pre-bg:#0d1117;
+  --border:#30363d;--bq-border:#3d444d;--bq-text:#8b949e;
+  --toc-bg:#161b22;--toc-border:#30363d;
+  --header-bg:#161b22;--shadow:0 1px 3px rgba(0,0,0,.4);
+  --btn-bg:#21262d;--btn-border:#30363d;--btn-hover:#30363d;
+  --table-head:#21262d;--table-border:#30363d;--table-alt:#1c2128;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;scroll-behavior:smooth}
+body{
+  font-family:var(--font);background:var(--page-bg);color:var(--text);
+  line-height:1.7;transition:background var(--dur),color var(--dur);
+}
+.site-header{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;height:56px;
+  background:var(--header-bg);border-bottom:1px solid var(--border);
+  box-shadow:var(--shadow);
+  transition:background var(--dur),border-color var(--dur);
+}
+.site-title{
+  font-weight:600;font-size:.95rem;color:var(--heading);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+#theme-btn{
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  width:36px;height:36px;padding:0;
+  border:1px solid var(--btn-border);border-radius:var(--radius);
+  background:var(--btn-bg);cursor:pointer;color:var(--text);
+  transition:background var(--dur),border-color var(--dur);
+}
+#theme-btn:hover{background:var(--btn-hover)}
+#theme-btn svg{
+  width:18px;height:18px;
+  fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;
+}
+[data-theme="light"] .icon-moon,[data-theme="dark"] .icon-sun{display:none}
+.layout{max-width:1100px;margin:0 auto;padding:40px 24px}
+.layout.has-toc{
+  display:grid;grid-template-columns:240px 1fr;
+  gap:48px;align-items:start;
+}
+@media(max-width:900px){
+  .layout.has-toc{grid-template-columns:1fr;gap:0}
+}
+.toc-sidebar{
+  position:sticky;top:calc(56px + 24px);
+  max-height:calc(100vh - 56px - 48px);
+  overflow-y:auto;padding:16px;
+  background:var(--toc-bg);border:1px solid var(--toc-border);
+  border-radius:var(--radius);font-size:.875rem;
+  transition:background var(--dur),border-color var(--dur);
+}
+.toc-sidebar::-webkit-scrollbar{width:4px}
+.toc-sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+#toc-details>summary{
+  font-weight:600;cursor:pointer;user-select:none;
+  padding:2px 0 10px;color:var(--heading);
+  list-style:none;display:flex;align-items:center;gap:6px;
+}
+#toc-details>summary::-webkit-details-marker{display:none}
+#toc-details>summary::before{
+  content:"›";display:inline-block;
+  transition:transform .2s;font-size:1.1em;line-height:1;
+}
+#toc-details[open]>summary::before{transform:rotate(90deg)}
+#toc-nav{display:flex;flex-direction:column;gap:2px;padding-top:4px}
+#toc-nav a{
+  color:var(--muted);text-decoration:none;
+  display:block;padding:3px 6px;border-radius:4px;
+  transition:color .15s,background .15s;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:.85rem;
+}
+#toc-nav a:hover{color:var(--link);background:var(--btn-hover)}
+@media(max-width:900px){
+  .toc-sidebar{position:static;max-height:none;margin-bottom:24px}
+}
+.content{min-width:0;max-width:760px}
+.no-toc .content{margin:0 auto}
+.content h1,.content h2,.content h3,
+.content h4,.content h5,.content h6{
+  color:var(--heading);font-weight:600;line-height:1.3;
+  margin-top:1.75em;margin-bottom:.5em;
+}
+.content h1{
+  font-size:2em;padding-bottom:.3em;
+  border-bottom:1px solid var(--border);margin-top:0;
+}
+.content h2{font-size:1.5em;padding-bottom:.3em;border-bottom:1px solid var(--border)}
+.content h3{font-size:1.25em}
+.content h4{font-size:1em}
+.content h5{font-size:.875em}
+.content h6{font-size:.85em;color:var(--muted)}
+.content p{margin-bottom:1em}
+.content a{color:var(--link);text-decoration:underline}
+.content a:hover{color:var(--link-hover)}
+.content img{max-width:100%;height:auto;border-radius:var(--radius);display:block}
+.content ul,.content ol{padding-left:2em;margin-bottom:1em}
+.content li{margin:.25em 0}
+.content li>ul,.content li>ol{margin-bottom:0}
+.content blockquote{
+  border-left:4px solid var(--bq-border);padding:.5em 1em;
+  margin:1em 0;color:var(--bq-text);
+}
+.content blockquote p{margin-bottom:0}
+.content code{
+  font-family:var(--mono);font-size:.875em;
+  background:var(--code-bg);color:var(--code-text);
+  padding:.2em .4em;border-radius:3px;border:1px solid var(--border);
+}
+.content pre{
+  background:var(--pre-bg);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;
+  overflow-x:auto;margin-bottom:1em;line-height:1.5;
+}
+.content pre code{background:none;border:none;padding:0;font-size:.875em}
+.content hr{border:none;border-top:1px solid var(--border);margin:2em 0}
+.content table{
+  border-collapse:collapse;width:100%;margin-bottom:1em;
+  font-size:.9em;overflow-x:auto;display:block;
+}
+.content th,.content td{
+  border:1px solid var(--table-border);padding:6px 12px;text-align:left;
+}
+.content th{background:var(--table-head);font-weight:600}
+.content tr:nth-child(even) td{background:var(--table-alt)}
+.content del{color:var(--muted)}
+.content h1 a,.content h2 a,.content h3 a,
+.content h4 a,.content h5 a,.content h6 a{color:inherit;text-decoration:none}
+@media print{
+  .site-header,.toc-sidebar{display:none!important}
+  .layout{padding:0;max-width:none}
+  .content{max-width:none}
+  body{background:#fff;color:#000}
+  a{color:inherit;text-decoration:none}
+}
+</style>
+<script>(function(){var s;try{s=localStorage.getItem("theme")}catch(e){}var p=window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",s||p);})();</script>
+</head>
+<body>
+<header class="site-header">
+  <span class="site-title">DOCUMENTATION</span>
+  <button id="theme-btn" onclick="toggleTheme()" aria-label="Toggle colour scheme" title="Toggle dark / light mode"><svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg><svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+</header>
+<div class="layout has-toc">
+  <aside class="toc-sidebar">
+    <details id="toc-details">
+      <summary>Contents</summary>
+      <nav id="toc-nav">
+<a href="#badger-2350-repository-documentation" style="padding-left:0px">Badger 2350 — Repository Documentation</a>
+<a href="#table-of-contents" style="padding-left:14px">Table of Contents</a>
+<a href="#repository-structure" style="padding-left:14px">Repository Structure</a>
+<a href="#board" style="padding-left:14px">board/</a>
+<a href="#ci" style="padding-left:14px">ci/</a>
+<a href="#examples" style="padding-left:14px">examples/</a>
+<a href="#firmware" style="padding-left:14px">firmware/</a>
+<a href="#firmwareapps" style="padding-left:28px">firmware/apps/</a>
+<a href="#badge" style="padding-left:42px">badge/</a>
+<a href="#clock" style="padding-left:42px">clock/</a>
+<a href="#gallery" style="padding-left:42px">gallery/</a>
+<a href="#hydrate" style="padding-left:42px">hydrate/</a>
+<a href="#list" style="padding-left:42px">list/</a>
+<a href="#mass-storage" style="padding-left:42px">mass_storage/</a>
+<a href="#menu" style="padding-left:42px">menu/</a>
+<a href="#the-compendium" style="padding-left:42px">the_compendium/</a>
+<a href="#weather" style="padding-left:42px">weather/</a>
+<a href="#firmwareassets" style="padding-left:28px">firmware/assets/</a>
+<a href="#firmwaremainpy" style="padding-left:28px">firmware/main.py</a>
+<a href="#firmwaresecretspy" style="padding-left:28px">firmware/secrets.py</a>
+<a href="#modules" style="padding-left:14px">modules/</a>
+<a href="#modulesc" style="padding-left:28px">modules/c/</a>
+<a href="#modulescommon" style="padding-left:28px">modules/common/</a>
+<a href="#modulespython" style="padding-left:28px">modules/python/</a>
+<a href="#romfs" style="padding-left:14px">romfs/</a>
+<a href="#badgeware-api-specification" style="padding-left:0px">Badgeware API Specification</a>
+<a href="#module-badgeware-initpy" style="padding-left:14px">Module: badgeware (init.py)</a>
+<a href="#global-constants" style="padding-left:28px">Global Constants</a>
+<a href="#set-brightnessvalue" style="padding-left:28px">set_brightness(value)</a>
+<a href="#reset" style="padding-left:28px">reset()</a>
+<a href="#class-run" style="padding-left:28px">class _run</a>
+<a href="#runupdate-durationnone" style="padding-left:42px">_run(update, duration=None)</a>
+<a href="#runticks-property" style="padding-left:42px">_run.ticks (property)</a>
+<a href="#runprogress-property" style="padding-left:42px">_run.progress (property)</a>
+<a href="#runcallupdate" style="padding-left:42px">_run.call(update)</a>
+<a href="#waitforbuttonoralarmtimeout30-000" style="padding-left:28px">waitforbuttonoralarm(timeout=30_000)</a>
+<a href="#clear-running" style="padding-left:28px">clear_running()</a>
+<a href="#launchpath" style="padding-left:28px">launch(path)</a>
+<a href="#get-exceptione" style="padding-left:28px">get_exception(e)</a>
+<a href="#messagetitle-msg-windownone" style="padding-left:28px">message(title, msg, window=None)</a>
+<a href="#fatal-errortitle-error" style="padding-left:28px">fatal_error(title, error)</a>
+<a href="#module-badgewarebadge-builtinsbadge" style="padding-left:14px">Module: badgeware.badge → builtins.badge</a>
+<a href="#constants-set-on-builtins" style="padding-left:28px">Constants (set on builtins)</a>
+<a href="#class-badge" style="padding-left:28px">class Badge</a>
+<a href="#badgeinit" style="padding-left:42px">Badge.init()</a>
+<a href="#badgeticks-property-int" style="padding-left:42px">badge.ticks (property → int)</a>
+<a href="#badgeticks-delta-property-int" style="padding-left:42px">badge.ticks_delta (property → int)</a>
+<a href="#badgepoll" style="padding-left:42px">badge.poll()</a>
+<a href="#badgeresolution-property-tupleint-int" style="padding-left:42px">badge.resolution (property → tuple[int, int])</a>
+<a href="#badgeclear" style="padding-left:42px">badge.clear()</a>
+<a href="#badgeupdate" style="padding-left:42px">badge.update()</a>
+<a href="#badgemodemodenone" style="padding-left:42px">badge.mode(mode=None)</a>
+<a href="#badgebattery-voltage-float" style="padding-left:42px">badge.battery_voltage() → float</a>
+<a href="#badgeusb-connected-bool" style="padding-left:42px">badge.usb_connected() → bool</a>
+<a href="#badgebattery-level-int" style="padding-left:42px">badge.battery_level() → int</a>
+<a href="#badgeis-charging-bool" style="padding-left:42px">badge.is_charging() → bool</a>
+<a href="#badgedisk-freemountpointsystem-tupleint-int-int" style="padding-left:42px">badge.disk_free(mountpoint="/system") → tuple[int, int, int]</a>
+<a href="#badgelight-level-int" style="padding-left:42px">badge.light_level() → int</a>
+<a href="#badgepressedbuttonnone-bool-set" style="padding-left:42px">badge.pressed(button=None) → bool | set</a>
+<a href="#badgeheldbuttonnone-bool-set" style="padding-left:42px">badge.held(button=None) → bool | set</a>
+<a href="#badgereleasedbuttonnone-bool-set" style="padding-left:42px">badge.released(button=None) → bool | set</a>
+<a href="#badgechangedbuttonnone-bool-set" style="padding-left:42px">badge.changed(button=None) → bool | set</a>
+<a href="#badgecaselightsargs-listfloat" style="padding-left:42px">badge.caselights(*args) → list[float]</a>
+<a href="#badgesleepdurationnone" style="padding-left:42px">badge.sleep(duration=None)</a>
+<a href="#badgewake-reason-int" style="padding-left:42px">badge.wake_reason() → int</a>
+<a href="#badgewokenbybutton-bool" style="padding-left:42px">badge.wokenbybutton() → bool</a>
+<a href="#badgepressedtowakebutton-bool" style="padding-left:42px">badge.pressedtowake(button) → bool</a>
+<a href="#badgewokenbyreset-bool" style="padding-left:42px">badge.wokenbyreset() → bool</a>
+<a href="#module-badgewarefilesystem" style="padding-left:14px">Module: badgeware.filesystem</a>
+<a href="#file-existspath-bool" style="padding-left:28px">file_exists(path) → bool</a>
+<a href="#is-dirpath-bool" style="padding-left:28px">is_dir(path) → bool</a>
+<a href="#module-badgewaremath" style="padding-left:14px">Module: badgeware.math</a>
+<a href="#clampv-vmin-vmax-number" style="padding-left:28px">clamp(v, vmin, vmax) → number</a>
+<a href="#rndv1-v2none-int" style="padding-left:28px">rnd(v1, v2=None) → int</a>
+<a href="#frndv1-v2none-float" style="padding-left:28px">frnd(v1, v2=None) → float</a>
+<a href="#module-badgewarememory" style="padding-left:14px">Module: badgeware.memory</a>
+<a href="#freemessage-none" style="padding-left:28px">free(message="") → None</a>
+<a href="#module-badgewarertc-builtinsrtc" style="padding-left:14px">Module: badgeware.rtc → builtins.rtc</a>
+<a href="#class-rtc" style="padding-left:28px">class RTC</a>
+<a href="#rtcdatetimedtnone-tuple-none" style="padding-left:42px">rtc.datetime(dt=None) → tuple | None</a>
+<a href="#rtclocaltimetortc" style="padding-left:42px">rtc.localtimetortc()</a>
+<a href="#rtcrtctolocaltime" style="padding-left:42px">rtc.rtctolocaltime()</a>
+<a href="#rtctimefromntp" style="padding-left:42px">rtc.timefromntp()</a>
+<a href="#rtcsettimerticks-enableinterrupttrue" style="padding-left:42px">rtc.settimer(ticks, enableinterrupt=True)</a>
+<a href="#rtctimer-elapsed-bool" style="padding-left:42px">rtc.timer_elapsed() → bool</a>
+<a href="#rtcset-alarmhours0-minutes0-seconds0" style="padding-left:42px">rtc.set_alarm(hours=0, minutes=0, seconds=0)</a>
+<a href="#rtcclear-alarm" style="padding-left:42px">rtc.clear_alarm()</a>
+<a href="#rtcalarm-status-bool" style="padding-left:42px">rtc.alarm_status() → bool</a>
+<a href="#module-badgewaresprite" style="padding-left:14px">Module: badgeware.sprite</a>
+<a href="#class-spritesheet" style="padding-left:28px">class SpriteSheet</a>
+<a href="#spritesheetfile-columns-rows" style="padding-left:42px">SpriteSheet(file, columns, rows)</a>
+<a href="#spritesheetspritex-y-image" style="padding-left:42px">SpriteSheet.sprite(x, y) → image</a>
+<a href="#spritesheetanimationx0-y0-countnone-horizontaltrue-animatedsprite" style="padding-left:42px">SpriteSheet.animation(x=0, y=0, count=None, horizontal=True) → AnimatedSprite</a>
+<a href="#class-animatedsprite" style="padding-left:28px">class AnimatedSprite</a>
+<a href="#animatedspritespritesheet-x-y-count-horizontaltrue" style="padding-left:42px">AnimatedSprite(spritesheet, x, y, count, horizontal=True)</a>
+<a href="#animatedspriteframeframe-index0-image" style="padding-left:42px">AnimatedSprite.frame(frame_index=0) → image</a>
+<a href="#animatedspritecount-int" style="padding-left:42px">AnimatedSprite.count() → int</a>
+<a href="#module-badgewarestate-builtinsstate" style="padding-left:14px">Module: badgeware.state → builtins.State</a>
+<a href="#class-state" style="padding-left:28px">class State</a>
+<a href="#stateloadapp-defaults-bool" style="padding-left:42px">State.load(app, defaults) → bool</a>
+<a href="#statesaveapp-data" style="padding-left:42px">State.save(app, data)</a>
+<a href="#statemodifyapp-data" style="padding-left:42px">State.modify(app, data)</a>
+<a href="#statedeleteapp" style="padding-left:42px">State.delete(app)</a>
+<a href="#module-badgewaretext" style="padding-left:14px">Module: badgeware.text</a>
+<a href="#builtinsrom-font-romfonts" style="padding-left:28px">builtins.rom_font — ROMFonts</a>
+<a href="#romfontltnamegt-pixelfont" style="padding-left:42px">romfont.&amp;lt;name&amp;gt; → pixelfont</a>
+<a href="#dirrom-font-liststr" style="padding-left:42px">dir(rom_font) → list[str]</a>
+<a href="#loadfontfontfile-font-pixel-font" style="padding-left:28px">loadfont(fontfile) → font | pixel_font</a>
+<a href="#class-text-builtinstext" style="padding-left:28px">class _text — builtins.text</a>
+<a href="#texttokeniseimage-text-glyph-renderersnone-size24-list" style="padding-left:42px">text.tokenise(image, text, glyph_renderers=None, size=24) → list</a>
+<a href="#textdrawimage-text-boundsnone-linespacing1-wordspacing1-size24-rect" style="padding-left:42px">text.draw(image, text, bounds=None, linespacing=1, wordspacing=1, size=24) → rect</a>
+<a href="#textscrolltext-fontfacenone-fontsizenone-targetnone-speed25-gapnone-alignmiddle-callable" style="padding-left:42px">text.scroll(text, fontface=None, fontsize=None, target=None, speed=25, gap=None, align="middle") → callable</a>
+<a href="#additional-common-modules" style="padding-left:14px">Additional Common Modules</a>
+<a href="#modulescommonwifipy" style="padding-left:28px">modules/common/wifi.py</a>
+<a href="#wificonnectssidnone-psknone-timeout60-retries5-bool" style="padding-left:42px">wifi.connect(ssid=None, psk=None, timeout=60, retries=5) → bool</a>
+<a href="#wifitick-bool" style="padding-left:42px">wifi.tick() → bool</a>
+<a href="#wifidisconnect" style="padding-left:42px">wifi.disconnect()</a>
+<a href="#wifiis-connected-bool" style="padding-left:42px">wifi.is_connected() → bool</a>
+<a href="#wifistatus-tupleint-str" style="padding-left:42px">wifi.status() → tuple[int, str]</a>
+<a href="#wifiip-wifiipv4-str-none" style="padding-left:42px">wifi.ip() / wifi.ipv4() → str | None</a>
+<a href="#wifiipv6-str-none" style="padding-left:42px">wifi.ipv6() → str | None</a>
+<a href="#wifisubnet-str-none" style="padding-left:42px">wifi.subnet() → str | None</a>
+<a href="#wifigateway-str-none" style="padding-left:42px">wifi.gateway() → str | None</a>
+<a href="#wifinameserver-str-none" style="padding-left:42px">wifi.nameserver() → str | None</a>
+<a href="#modulescommonsecretspy" style="padding-left:28px">modules/common/secrets.py</a>
+<a href="#secretsrequirekeys" style="padding-left:42px">secrets.require(*keys)</a>
+<a href="#modulescommoneasingpy" style="padding-left:28px">modules/common/easing.py</a>
+<a href="#modulescommonlsm6ds3py-class-lsm6ds3" style="padding-left:28px">modules/common/lsm6ds3.py — class LSM6DS3</a>
+<a href="#lsm6ds3i2c-address0x6a-modenormalmode104hz" style="padding-left:42px">LSM6DS3(i2c, address=0x6A, mode=NORMALMODE104HZ)</a>
+<a href="#lsm6ds3get-readings-tupleint-int-int-int-int-int" style="padding-left:42px">LSM6DS3.get_readings() → tuple[int, int, int, int, int, int]</a>
+<a href="#lsm6ds3getstepcount-int" style="padding-left:42px">LSM6DS3.getstepcount() → int</a>
+<a href="#lsm6ds3resetstepcount" style="padding-left:42px">LSM6DS3.resetstepcount()</a>
+<a href="#lsm6ds3tilt-detected-int" style="padding-left:42px">LSM6DS3.tilt_detected() → int</a>
+<a href="#lsm6ds3sigmotiondetected-int" style="padding-left:42px">LSM6DS3.sigmotiondetected() → int</a>
+<a href="#lsm6ds3singletapdetected-int" style="padding-left:42px">LSM6DS3.singletapdetected() → int</a>
+<a href="#lsm6ds3doubletapdetected-int" style="padding-left:42px">LSM6DS3.doubletapdetected() → int</a>
+<a href="#lsm6ds3freefall-detected-int" style="padding-left:42px">LSM6DS3.freefall_detected() → int</a>
+<a href="#modulescommonpimoronipy" style="padding-left:28px">modules/common/pimoroni.py</a>
+<a href="#class-analog" style="padding-left:42px">class Analog</a>
+<a href="#class-analogmux" style="padding-left:42px">class AnalogMux</a>
+<a href="#class-button" style="padding-left:42px">class Button</a>
+<a href="#class-rgbled" style="padding-left:42px">class RGBLED</a>
+<a href="#class-pid" style="padding-left:42px">class PID</a>
+<a href="#class-buzzer" style="padding-left:42px">class Buzzer</a>
+<a href="#class-shiftregister" style="padding-left:42px">class ShiftRegister</a>
+<a href="#class-pwmled" style="padding-left:42px">class PWMLED</a>
+<a href="#modulescommonqwstpadpy-class-qwstpad" style="padding-left:28px">modules/common/qwstpad.py — class QwSTPad</a>
+<a href="#qwstpadi2c-addressdefaultaddress-showaddresstrue" style="padding-left:42px">QwSTPad(i2c, address=DEFAULTADDRESS, showaddress=True)</a>
+<a href="#qwstpadread-buttons-ordereddict" style="padding-left:42px">QwSTPad.read_buttons() → OrderedDict</a>
+<a href="#qwstpadset-ledsstates" style="padding-left:42px">QwSTPad.set_leds(states)</a>
+<a href="#qwstpadset-ledled-state" style="padding-left:42px">QwSTPad.set_led(led, state)</a>
+<a href="#qwstpadclear-leds" style="padding-left:42px">QwSTPad.clear_leds()</a>
+<a href="#qwstpadaddress-code-int" style="padding-left:42px">QwSTPad.address_code() → int</a>
+      </nav>
+    </details>
+  </aside>
+  <main class="content">
+<h1 id="badger-2350-repository-documentation">Badger 2350 — Repository Documentation</h1>
+<p>A MicroPython firmware framework for the <a href="https://shop.pimoroni.com/products/badger-2350">Pimoroni Badger 2350</a> e-paper badge, built on the RP2350 microcontroller.</p>
+<hr>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#repository-structure">Repository Structure</a></li>
+<li><a href="#board">board/</a></li>
+<li><a href="#ci">ci/</a></li>
+<li><a href="#examples">examples/</a></li>
+<li><a href="#firmware">firmware/</a></li>
+<li><a href="#firmwareapps">firmware/apps/</a></li>
+<li><a href="#firmwareassets">firmware/assets/</a></li>
+<li><a href="#firmwaremainpy">firmware/main.py</a></li>
+<li><a href="#firmwaresecretspy">firmware/secrets.py</a></li>
+<li><a href="#modules">modules/</a></li>
+<li><a href="#modulesc">modules/c/</a></li>
+<li><a href="#modulescommon">modules/common/</a></li>
+<li><a href="#modulespython">modules/python/</a></li>
+<li><a href="#romfs">romfs/</a></li>
+<li><a href="#badgeware-api-specification">Badgeware API Specification</a></li>
+</ul>
+<hr>
+<h2 id="repository-structure">Repository Structure</h2>
+<pre><code>
+badger2350/
+├── board/              Board definition files (CMake, C headers, pin maps)
+├── ci/                 CI scripts and tooling configuration
+├── examples/           Minimal example sketches
+├── firmware/           Default apps and assets flashed onto the device
+│   ├── apps/           Individual app directories
+│   └── assets/         Shared fonts, icons, and sprites
+├── modules/            MicroPython modules frozen into the firmware
+│   ├── c/              C/C++ native modules
+│   ├── common/         Python modules available to all apps
+│   └── python/         Python-only utility modules
+└── romfs/              Read-only ROM filesystem (fonts)
+</code></pre>
+<hr>
+<h2 id="board">board/</h2>
+<p>Board definition for MicroPython build system.</p>
+<p>| File | Description |</p>
+<p>|------|-------------|</p>
+<p>| <code>filesystem.cmake</code> | CMake rules for embedding the ROM filesystem |</p>
+<p>| <code>manifest.py</code> | MicroPython frozen module manifest |</p>
+<p>| <code>mpconfigboard.cmake</code> | Board-level CMake configuration |</p>
+<p>| <code>mpconfigboard.h</code> | C-level MicroPython board configuration macros |</p>
+<p>| <code>pimoroni_badger2350.h</code> | Hardware-specific pin and peripheral definitions |</p>
+<p>| <code>pins.csv</code> | Pin-name-to-GPIO mapping table |</p>
+<p>| <code>usermodules.cmake</code> | CMake includes for user C modules |</p>
+<hr>
+<h2 id="ci">ci/</h2>
+<p>Continuous integration helpers.</p>
+<p>| File | Description |</p>
+<p>|------|-------------|</p>
+<p>| <code>micropython.sh</code> | Builds the MicroPython firmware image |</p>
+<p>| <code>python.sh</code> | Runs Python linting via ruff |</p>
+<p>| <code>ruff.toml</code> | Ruff linter configuration |</p>
+<p>| <code>pico-sdk-crt0-startup-rosc.patch</code> | Patch applied to the Pico SDK crt0 startup for ROSC use |</p>
+<hr>
+<h2 id="examples">examples/</h2>
+<p>| File | Description |</p>
+<p>|------|-------------|</p>
+<p>| <code>main.py</code> | Placeholder/starter template for custom apps |</p>
+<hr>
+<h2 id="firmware">firmware/</h2>
+<h3 id="firmwareapps">firmware/apps/</h3>
+<p>Each app lives in its own directory and must contain at least <code><strong>init</strong>.py</code> and <code>icon.png</code>.</p>
+<h4 id="badge">badge/</h4>
+<p>Personal ID-card display app.</p>
+<p>| File | Description |</p>
+<p>|------|-------------|</p>
+<p>| <code><strong>init</strong>.py</code> | Main app logic; renders front/rear ID card, handles button input |</p>
+<p>| <code>avatar.png</code> | Default avatar image |</p>
+<p>| <code>icon.png</code> | Menu icon |</p>
+<p>| <code>assets/socials/</code> | PNG icons for 35+ social network platforms |</p>
+<h4 id="clock">clock/</h4>
+<p>Multi-style clock app with NTP sync.</p>
+<p>| File | Description |</p>
+<p>|------|-------------|</p>
+<p>| <code><strong>init</strong>.py</code> | Main app loop; dispatches to one of four clock renderers |</p>
+<p>| <code>daylightsaving.py</code> | <code>DaylightSavingPolicy</code> and <code>DaylightSaving</code> classes for DST calculation |</p>
+<p>| <code>usermessage.py</code> | Helper functions <code>user<em>message()</code>, <code>center</em>text()</code>, <code>stretch_text()</code> |</p>
+<p>| <code>icon.png</code> | Menu icon |</p>
+<p>| <code>assets/</code> | Sprite sheets and backgrounds for each clock style |</p>
+<h4 id="gallery">gallery/</h4>
+<p>Image gallery viewer.</p>
+<p>| File | Description |</p>
+<p>|------|-------------|</p>
+<p>| <code><strong>init</strong>.py</code> | App entry point |</p>
+<p>| <code>ui.py</code> | Gallery UI rendering |</p>
+<p>| <code>icon.png</code> | Menu icon |</p>
+<p>| <code>images/</code> | Sample image files |</p>
+<h4 id="hydrate">hydrate/</h4>
+<p>Hydration reminder app.</p>
+<p>| File | Description |</p>
+<p>|------|-------------|</p>
+<p>| <code><strong>init</strong>.py</code> | App entry point |</p>
+<p>| <code>icon.png</code> | Menu icon |</p>
+<h4 id="list">list/</h4>
+<p>Scrollable checklist app.</p>
+<p>| File | Description |</p>
+<p>|------|-------------|</p>
+<p>| <code><strong>init</strong>.py</code> | App entry point |</p>
+<p>| <code>icon.png</code> | Menu icon |</p>
+<p>| <code>avatar.png</code> | Avatar image |</p>
+<p>| <code>assets/</code> | Arrow and checkbox/cross UI icons |</p>
+<h4 id="mass-storage">mass_storage/</h4>
+<p>Mounts the badge as a USB mass storage device.</p>
+<p>| File | Description |</p>
+<p>|------|-------------|</p>
+<p>| <code><strong>init</strong>.py</code> | Triggers USB MSC mode |</p>
+<p>| <code>icon.png</code> | Menu icon |</p>
+<h4 id="menu">menu/</h4>
+<p>System launcher / home screen.</p>
+<p>| File | Description |</p>
+<p>|------|-------------|</p>
+<p>| <code><strong>init</strong>.py</code> | Menu entry point; loads installed apps, handles navigation and launch |</p>
+<p>| <code>app.py</code> | <code>App</code> and <code>Apps</code> classes — icon loading, grid layout, activation |</p>
+<p>| <code>ui.py</code> | Draws background, header, and decorative elements |</p>
+<h4 id="the-compendium">the_compendium/</h4>
+<p>Raycasting dungeon-crawler game.</p>
+<p>| File | Description |</p>
+<p>|------|-------------|</p>
+<p>| <code><strong>init</strong>.py</code> | Game entry point |</p>
+<p>| <code>behaviours.py</code> | Enemy AI behaviour definitions |</p>
+<p>| <code>cutscene.py</code> | Cutscene rendering |</p>
+<p>| <code>dialogue.py</code> | Dialogue system |</p>
+<p>| <code>level.py</code> | Level data and management |</p>
+<p>| <code>monster.py</code> | Monster definitions |</p>
+<p>| <code>raycaster.py</code> | Software raycaster renderer |</p>
+<p>| <code>ui.py</code> | HUD and inventory rendering |</p>
+<p>| <code>assets/</code> | Background, character, and UI sprites |</p>
+<h4 id="weather">weather/</h4>
+<p>Weather forecast display.</p>
+<p>| File | Description |</p>
+<p>|------|-------------|</p>
+<p>| <code><strong>init</strong>.py</code> | App entry point; fetches and displays weather data |</p>
+<p>| <code>ui.py</code> | Weather UI rendering |</p>
+<p>| <code>icon.png</code> | Menu icon |</p>
+<p>| <code>assets/</code> | Weather condition icons (cloud, rainy, snowy, sunny, thunderstorm) |</p>
+<hr>
+<h3 id="firmwareassets">firmware/assets/</h3>
+<p>| Path | Description |</p>
+<p>|------|-------------|</p>
+<p>| <code>fonts/*.ppf</code> | Pixel-font files (pimoroni pixel font format) |</p>
+<p>| <code>fonts/*.af</code> | Anti-aliased vector font files (DynaPuff, IndieFlower, MonaSans) |</p>
+<p>| <code>icons.png</code> | Shared system icon sprite sheet |</p>
+<p>| <code>mona-sprites/</code> | Mona mascot animation frames (code, dance, dead, eating, heart, love, notify) |</p>
+<hr>
+<h3 id="firmwaremainpy">firmware/main.py</h3>
+<p>System launcher script. Reads the <code>menu</code> state to determine which app was last running, validates that the app still exists, then calls <code>launch(app)</code>. After the app exits, resets state to the menu and calls <code>reset()</code>.</p>
+<hr>
+<h3 id="firmwaresecretspy">firmware/secrets.py</h3>
+<p>Template for user WiFi credentials. Loaded by <code>modules/common/secrets.py</code>. Must define <code>WIFI<em>SSID</code>, <code>WIFI</em>PASSWORD</code>, and optionally <code>REGION</code> and <code>TIMEZONE</code>.</p>
+<hr>
+<h2 id="modules">modules/</h2>
+<h3 id="modulesc">modules/c/</h3>
+<p>Native C/C++ MicroPython modules compiled into the firmware.</p>
+<p>| Module | Description |</p>
+<p>|--------|-------------|</p>
+<p>| <code>jpegdec/</code> | JPEG decoder (JPEGDEC library) |</p>
+<p>| <code>picovector/</code> | 2D vector graphics engine — shapes, fonts, images, brushes, rasteriser |</p>
+<p>| <code>pngdec/</code> | PNG decoder (PNGdec + zlib) |</p>
+<p>| <code>powman/</code> | RP2350 power management: dormant sleep, wake reasons, wake buttons |</p>
+<p>| <code>ssd1680/</code> | SSD1680 e-paper display driver |</p>
+<hr>
+<h3 id="modulescommon">modules/common/</h3>
+<p>Python modules available to all apps, loaded by <code>boot.py</code> before any app runs.</p>
+<p>| File | Description |</p>
+<p>|------|-------------|</p>
+<p>| <code>badgeware/</code> | Core badge framework — see <a href="#badgeware-api-specification">Badgeware API Specification</a> |</p>
+<p>| <code>board.py</code> | Imports all <code>machine.Pin.board.*</code> names into local scope |</p>
+<p>| <code>boot.py</code> | Boot entry point: switches C++ allocator to MicroPython heap, imports <code>badgeware</code> |</p>
+<p>| <code>easing.py</code> | 24 easing functions for animations (quad, cubic, quart, quint, sine, expo, circ, back, elastic, bounce) |</p>
+<p>| <code>lsm6ds3.py</code> | Driver for the LSM6DS3 IMU (accelerometer + gyroscope + pedometer + tap detection) |</p>
+<p>| <code>main.py</code> | Handles double-tap MSC boot, filesystem checks, and delegates to <code>/system/main</code> |</p>
+<p>| <code>pimoroni.py</code> | Hardware utility classes: <code>Analog</code>, <code>AnalogMux</code>, <code>Button</code>, <code>RGBLED</code>, <code>PID</code>, <code>Buzzer</code>, <code>ShiftRegister</code>, <code>PWMLED</code> |</p>
+<p>| <code>qwstpad.py</code> | Driver for the QwSTPad I2C game controller (10 buttons, 4 LEDs) |</p>
+<p>| <code>secrets.py</code> | Secrets loader; imports from <code>/secrets.py</code> or <code>/system/secrets.py</code> and exposes <code>require()</code> |</p>
+<p>| <code>wifi.py</code> | WiFi connection management with retry logic |</p>
+<hr>
+<h3 id="modulespython">modules/python/</h3>
+<p>| File | Description |</p>
+<p>|------|-------------|</p>
+<p>| <code>_msc.py</code> | Activates USB Mass Storage mode |</p>
+<p>| <code>hardware_test.py</code> | Hardware self-test routine |</p>
+<hr>
+<h2 id="romfs">romfs/</h2>
+<p>Read-only filesystem mounted at <code>/rom/fonts/</code>. Contains <code>.ppf</code> pixel-font files for all system fonts, including the two <code>badgeware</code>-specific fonts (<code>badgeware.ppf</code>, <code>badgewaremax.ppf</code>). Fonts are accessible via <code>rom_font.&lt;name&gt;</code>.</p>
+<hr>
+<hr>
+<h1 id="badgeware-api-specification">Badgeware API Specification</h1>
+<p>The <code>badgeware</code> package (<code>modules/common/badgeware/</code>) is the core application framework. All symbols it exports are hoisted into <code>builtins</code> and are therefore available globally in every app without explicit imports.</p>
+<hr>
+<h2 id="module-badgeware-initpy">Module: <code>badgeware</code> (<code><strong>init</strong>.py</code>)</h2>
+<p>Initialises the display, picovector, and all sub-modules. Exports the following global symbols and functions to <code>builtins</code>.</p>
+<h3 id="global-constants">Global Constants</h3>
+<p>Exposed via <code>picovector</code> bindings or set directly:</p>
+<p>| Constant | Value | Description |</p>
+<p>|----------|-------|-------------|</p>
+<p>| <code>LORES</code> | <code>0b00</code> | Low-resolution display mode |</p>
+<p>| <code>HIRES</code> | <code>0b01</code> | High-resolution display mode |</p>
+<p>| <code>VSYNC</code> | <code>0b10</code> | VSync-enabled display mode |</p>
+<p>| <code>FAST_UPDATE</code> | <code>3 &lt;&lt; 4</code> | Fast e-paper partial refresh |</p>
+<p>| <code>FULL_UPDATE</code> | <code>0 &lt;&lt; 4</code> | Full e-paper refresh (clears ghosting) |</p>
+<p>| <code>MEDIUM_UPDATE</code> | <code>2 &lt;&lt; 4</code> | Medium-speed e-paper refresh |</p>
+<p>| <code>DITHER</code> | <code>1 &lt;&lt; 8</code> | Enable dithering on display update |</p>
+<p>| <code>NON_BLOCKING</code> | <code>1 &lt;&lt; 9</code> | Non-blocking display update mode |</p>
+<p>| <code>OFF</code> | <code>image.OFF</code> | Anti-aliasing off |</p>
+<p>| <code>X2</code> | <code>image.X2</code> | 2× anti-aliasing |</p>
+<p>| <code>X4</code> | <code>image.X4</code> | 4× anti-aliasing |</p>
+<p>Button pin references (<code>BUTTON<em>A</code>, <code>BUTTON</em>B</code>, <code>BUTTON<em>C</code>, <code>BUTTON</em>UP</code>, <code>BUTTON<em>DOWN</code>, <code>BUTTON</em>HOME</code>) are set in <code>badge.py</code> and exposed as <code>builtins</code>.</p>
+<hr>
+<h3 id="set-brightnessvalue"><code>set_brightness(value)</code></h3>
+<p>No-op stub. Brightness control is not implemented on the Badger hardware.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>value</code> — ignored</li>
+</ul>
+<hr>
+<h3 id="reset"><code>reset()</code></h3>
+<p>Safely resets the device. Waits until all buttons are released before calling <code>machine.reset()</code> to avoid accidentally entering bootloader mode via the HOME/BOOT button.</p>
+<hr>
+<h3 id="class-run"><code>class _run</code></h3>
+<p>Loop runner returned as <code>builtins.run</code>. Manages the main update loop for an app.</p>
+<h4 id="runupdate-durationnone"><code>_run(update, duration=None)</code></h4>
+<p>Instantiating with a callable immediately invokes it as the loop function.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>update</code> — callable called once per frame; return a non-<code>None</code> value to exit the loop</li>
+<li><code>duration</code> — optional maximum duration in milliseconds</li>
+</ul>
+<h4 id="runticks-property"><code>_run.ticks</code> <em>(property)</em></h4>
+<p>Returns milliseconds elapsed since the loop started.</p>
+<h4 id="runprogress-property"><code>_run.progress</code> <em>(property)</em></h4>
+<p>Returns a <code>float</code> in <code>[0.0, 1.0]</code> representing elapsed time as a fraction of <code>duration</code>. Returns <code>0</code> if <code>duration</code> is <code>None</code>.</p>
+<h4 id="runcallupdate"><code>_run.<strong>call</strong>(update)</code></h4>
+<p>Starts the loop. Calls <code>badge.poll()</code> once, then calls <code>update()</code> in a tight loop until <code>update()</code> returns non-<code>None</code> or <code>duration</code> is exceeded. Exceptions are caught and displayed via <code>fatal_error()</code>. Nested loops are supported via <code>builtins.loop</code> stack.</p>
+<hr>
+<h3 id="waitforbuttonoralarmtimeout30-000"><code>wait<em>for</em>button<em>or</em>alarm(timeout=30_000)</code></h3>
+<p>Blocks until a button is pressed, an RTC alarm fires, or the timeout expires with USB disconnected (in which case the badge is put to sleep).</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>timeout</code> — milliseconds before sleeping; <code>None</code> disables the sleep timeout</li>
+</ul>
+<hr>
+<h3 id="clear-running"><code>clear_running()</code></h3>
+<p>Resets the <code>menu</code> state so the next boot launches the menu app instead of the previously running app. Also clears the RTC alarm.</p>
+<hr>
+<h3 id="launchpath"><code>launch(path)</code></h3>
+<p>Loads and runs an app from the given path. Sets up the HOME button interrupt to quit to the launcher. Cleans up <code>sys.path</code> and <code>sys.modules</code> after the app exits.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>path</code> — absolute path string, e.g. <code>"/system/apps/clock"</code></li>
+</ul>
+<p><strong>Returns:</strong> the return value of the app's <code>on_exit()</code> function, or <code>None</code>.</p>
+<p>Calls <code>on_exit()</code> on the app module if defined, then garbage collects.</p>
+<hr>
+<h3 id="get-exceptione"><code>get_exception(e)</code></h3>
+<p>Formats an exception into a traceback string (excluding the "Traceback" header line).</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>e</code> — exception object</li>
+</ul>
+<p><strong>Returns:</strong> <code>str</code></p>
+<hr>
+<h3 id="messagetitle-msg-windownone"><code>message(title, msg, window=None)</code></h3>
+<p>Renders a modal dialog box on screen with a title bar, drop shadow, body text, and an "Okay" button label. Does <strong>not</strong> call <code>display.update()</code>.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>title</code> — <code>str</code> shown in the title bar</li>
+<li><code>msg</code> — <code>str</code> body text, rendered via <code>text.draw()</code></li>
+<li><code>window</code> — optional <code>image</code> window; defaults to a full-screen window</li>
+</ul>
+<hr>
+<h3 id="fatal-errortitle-error"><code>fatal_error(title, error)</code></h3>
+<p>Renders a <code>message()</code> dialog, flushes the display, waits for a button press, deletes the <code>menu</code> state, then reboots.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>title</code> — <code>str</code> dialog title</li>
+<li><code>error</code> — <code>str</code> or exception object</li>
+</ul>
+<hr>
+<h2 id="module-badgewarebadge-builtinsbadge">Module: <code>badgeware.badge</code> → <code>builtins.badge</code></h2>
+<p>Instantiates and exposes a single <code>Badge</code> instance as <code>builtins.badge</code>.</p>
+<h3 id="constants-set-on-builtins">Constants (set on <code>builtins</code>)</h3>
+<p>| Constant | Description |</p>
+<p>|----------|-------------|</p>
+<p>| <code>BUTTON<em>A</code> | <code>machine.Pin.board.BUTTON</em>A</code> |</p>
+<p>| <code>BUTTON<em>B</code> | <code>machine.Pin.board.BUTTON</em>B</code> |</p>
+<p>| <code>BUTTON<em>C</code> | <code>machine.Pin.board.BUTTON</em>C</code> |</p>
+<p>| <code>BUTTON<em>UP</code> | <code>machine.Pin.board.BUTTON</em>UP</code> |</p>
+<p>| <code>BUTTON<em>DOWN</code> | <code>machine.Pin.board.BUTTON</em>DOWN</code> |</p>
+<p>| <code>BUTTON<em>HOME</code> | <code>machine.Pin.board.BUTTON</em>HOME</code> |</p>
+<hr>
+<h3 id="class-badge"><code>class Badge</code></h3>
+<h4 id="badgeinit"><code>Badge.<strong>init</strong>()</code></h4>
+<p>Initialises default pen/clear colours based on model, sets up four case-light PWM channels at 500 Hz with 0% duty cycle.</p>
+<hr>
+<h4 id="badgeticks-property-int"><code>badge.ticks</code> <em>(property → int)</em></h4>
+<p>Milliseconds since the last <code>badge.poll()</code> call, sourced from the <code>_input</code> native module.</p>
+<hr>
+<h4 id="badgeticks-delta-property-int"><code>badge.ticks_delta</code> <em>(property → int)</em></h4>
+<p>Millisecond delta between the last two <code>badge.poll()</code> calls.</p>
+<hr>
+<h4 id="badgepoll"><code>badge.poll()</code></h4>
+<p>Reads all button inputs. Must be called once per frame (or before any <code>badge.pressed()</code> / <code>badge.held()</code> / <code>badge.released()</code> / <code>badge.changed()</code> checks) to update internal state.</p>
+<hr>
+<h4 id="badgeresolution-property-tupleint-int"><code>badge.resolution</code> <em>(property → tuple[int, int])</em></h4>
+<p>Returns <code>(screen.width, screen.height)</code>.</p>
+<hr>
+<h4 id="badgeclear"><code>badge.clear()</code></h4>
+<p>Fills the screen with <code>badge.default<em>clear</code> colour and resets the pen to <code>badge.default</em>pen</code>.</p>
+<p><strong>Returns:</strong> <code>True</code></p>
+<hr>
+<h4 id="badgeupdate"><code>badge.update()</code></h4>
+<p>Flushes the screen buffer to the display. On the first call (Badger model), performs a full refresh to avoid ghosting; subsequent calls use the user-configured speed. If <code>DITHER</code> mode is set, applies dithering before update. Calls <code>badge.clear()</code> and <code>badge.poll()</code> after updating.</p>
+<p><strong>Returns:</strong> <code>True</code></p>
+<hr>
+<h4 id="badgemodemodenone"><code>badge.mode(mode=None)</code></h4>
+<p>Gets or sets the display mode.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>mode</code> — optional bitmask combining <code>LORES</code>/<code>HIRES</code>, <code>VSYNC</code>, <code>FAST<em>UPDATE</code>/<code>FULL</em>UPDATE</code>/<code>MEDIUM<em>UPDATE</code>, <code>DITHER</code>, <code>NON</em>BLOCKING</code>. Omit to read the current mode.</li>
+</ul>
+<p><strong>Returns:</strong> <code>None</code> when setting; the current mode <code>int</code> when reading.</p>
+<p><strong>Side effects:</strong> Configures the SSD1680 blocking/speed settings (Badger) or display resolution/vsync (Tufty); recreates <code>builtins.screen</code> as an <code>image</code> backed by the display buffer when needed.</p>
+<hr>
+<h4 id="badgebattery-voltage-float"><code>badge.battery_voltage()</code> → <code>float</code></h4>
+<p>Returns the battery voltage in volts, averaged over 10 ADC samples and corrected against the internal 1.1 V reference.</p>
+<hr>
+<h4 id="badgeusb-connected-bool"><code>badge.usb_connected()</code> → <code>bool</code></h4>
+<p>Returns <code>True</code> if a USB cable is connected (VBUS detected).</p>
+<hr>
+<h4 id="badgebattery-level-int"><code>badge.battery_level()</code> → <code>int</code></h4>
+<p>Returns estimated battery percentage <code>[0, 100]</code> using a non-linear curve derived from battery voltage.</p>
+<hr>
+<h4 id="badgeis-charging-bool"><code>badge.is_charging()</code> → <code>bool</code></h4>
+<p>Returns <code>True</code> if a USB cable is connected and the battery is charging (CHARGE_STAT pin low).</p>
+<hr>
+<h4 id="badgedisk-freemountpointsystem-tupleint-int-int"><code>badge.disk_free(mountpoint="/system")</code> → <code>tuple[int, int, int]</code></h4>
+<p>Returns <code>(total<em>bytes, used</em>bytes, free_bytes)</code> for the given filesystem mountpoint.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>mountpoint</code> — filesystem path string, default <code>"/system"</code></li>
+</ul>
+<hr>
+<h4 id="badgelight-level-int"><code>badge.light_level()</code> → <code>int</code></h4>
+<p>Returns raw u16 ADC reading from the light sensor. Only available on the Tufty model; raises <code>RuntimeError</code> on Badger/Blinky.</p>
+<hr>
+<h4 id="badgepressedbuttonnone-bool-set"><code>badge.pressed(button=None)</code> → <code>bool | set</code></h4>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>button</code> — a <code>Pin</code> constant (e.g. <code>BUTTON_A</code>). If <code>None</code>, returns the full set of currently-pressed buttons.</li>
+</ul>
+<p><strong>Returns:</strong> <code>True</code> if the specified button was just pressed this frame; the set of all pressed buttons if no argument given.</p>
+<hr>
+<h4 id="badgeheldbuttonnone-bool-set"><code>badge.held(button=None)</code> → <code>bool | set</code></h4>
+<p>Same as <code>badge.pressed()</code> but for held (long-press) buttons.</p>
+<hr>
+<h4 id="badgereleasedbuttonnone-bool-set"><code>badge.released(button=None)</code> → <code>bool | set</code></h4>
+<p>Same as <code>badge.pressed()</code> but for buttons released this frame.</p>
+<hr>
+<h4 id="badgechangedbuttonnone-bool-set"><code>badge.changed(button=None)</code> → <code>bool | set</code></h4>
+<p>Same as <code>badge.pressed()</code> but for any change in button state (press or release).</p>
+<hr>
+<h4 id="badgecaselightsargs-listfloat"><code>badge.caselights(*args)</code> → <code>list[float]</code></h4>
+<p>Gets or sets the four rear case-light brightness values.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li>No args — returns current <code>[float, float, float, float]</code> brightness values <code>[0.0, 1.0]</code></li>
+<li>One <code>float</code> — sets all four lights to the same brightness</li>
+<li>Four <code>float</code> values — sets each light individually</li>
+</ul>
+<p>Applies gamma correction (exponent 2.2) before writing to the PWM duty cycle.</p>
+<p><strong>Returns:</strong> list of four brightness floats.</p>
+<hr>
+<h4 id="badgesleepdurationnone"><code>badge.sleep(duration=None)</code></h4>
+<p>Puts the device into deep sleep.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>duration</code> — optional sleep duration in milliseconds. If <code>None</code>, sleeps indefinitely until a button wakes it.</li>
+</ul>
+<p>Calls <code>powman.goto<em>dormant</em>for(duration)</code> or <code>powman.sleep()</code>.</p>
+<hr>
+<h4 id="badgewake-reason-int"><code>badge.wake_reason()</code> → <code>int</code></h4>
+<p>Returns the wake reason code from <code>powman.get<em>wake</em>reason()</code>. Compare against <code>powman.WAKE<em>BUTTON</em>A</code>, <code>powman.WAKE<em>BUTTON</em>B</code>, etc.</p>
+<hr>
+<h4 id="badgewokenbybutton-bool"><code>badge.woken<em>by</em>button()</code> → <code>bool</code></h4>
+<p>Returns <code>True</code> if the device was woken from sleep by any of the five face/directional buttons.</p>
+<hr>
+<h4 id="badgepressedtowakebutton-bool"><code>badge.pressed<em>to</em>wake(button)</code> → <code>bool</code></h4>
+<p>Returns <code>True</code> if the specified button was the one that woke the device from sleep.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>button</code> — a <code>Pin</code> constant</li>
+</ul>
+<hr>
+<h4 id="badgewokenbyreset-bool"><code>badge.woken<em>by</em>reset()</code> → <code>bool</code></h4>
+<p>Returns <code>True</code> if the device was woken by a reset event (<code>powman.get<em>wake</em>reason() == 255</code>).</p>
+<hr>
+<h2 id="module-badgewarefilesystem">Module: <code>badgeware.filesystem</code></h2>
+<p>Exports to <code>builtins</code>.</p>
+<h3 id="file-existspath-bool"><code>file_exists(path)</code> → <code>bool</code></h3>
+<p>Returns <code>True</code> if a file or directory exists at <code>path</code>. Uses <code>os.stat()</code> internally; catches <code>OSError</code> for missing paths.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>path</code> — filesystem path string</li>
+</ul>
+<hr>
+<h3 id="is-dirpath-bool"><code>is_dir(path)</code> → <code>bool</code></h3>
+<p>Returns <code>True</code> if <code>path</code> exists and is a directory (checks <code>stat</code> flags bit <code>0x4000</code>).</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>path</code> — filesystem path string</li>
+</ul>
+<hr>
+<h2 id="module-badgewaremath">Module: <code>badgeware.math</code></h2>
+<p>Exports to <code>builtins</code>.</p>
+<h3 id="clampv-vmin-vmax-number"><code>clamp(v, vmin, vmax)</code> → <code>number</code></h3>
+<p>Returns <code>v</code> clamped to the range <code>[vmin, vmax]</code>.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>v</code> — value to clamp</li>
+<li><code>vmin</code> — minimum bound</li>
+<li><code>vmax</code> — maximum bound</li>
+</ul>
+<hr>
+<h3 id="rndv1-v2none-int"><code>rnd(v1, v2=None)</code> → <code>int</code></h3>
+<p>Returns a random integer.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>rnd(n)</code> — random integer in <code>[0, n]</code></li>
+<li><code>rnd(a, b)</code> — random integer in <code>[a, b]</code></li>
+</ul>
+<hr>
+<h3 id="frndv1-v2none-float"><code>frnd(v1, v2=None)</code> → <code>float</code></h3>
+<p>Returns a random float.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>frnd(n)</code> — random float in <code>[0.0, n]</code></li>
+<li><code>frnd(a, b)</code> — random float in <code>[a, b]</code></li>
+</ul>
+<hr>
+<h2 id="module-badgewarememory">Module: <code>badgeware.memory</code></h2>
+<p>Exports to <code>builtins</code>.</p>
+<h3 id="freemessage-none"><code>free(message="")</code> → <code>None</code></h3>
+<p>Prints current free heap in kilobytes, plus the delta since the last call to <code>free()</code>. Forces a GC collect before measuring. Intended for debugging.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>message</code> — optional prefix label for the output line</li>
+</ul>
+<p><strong>Output example:</strong> <code>my_label: 142kb (+12kb)</code></p>
+<hr>
+<h2 id="module-badgewarertc-builtinsrtc">Module: <code>badgeware.rtc</code> → <code>builtins.rtc</code></h2>
+<p>Instantiates and exposes an <code>RTC</code> instance as <code>builtins.rtc</code>. Wraps the <code>pcf85063a.PCF85063A</code> hardware RTC. On construction, synchronises MicroPython's software clock from the hardware RTC (or vice versa) if the year is ≥ 2025.</p>
+<h3 id="class-rtc"><code>class RTC</code></h3>
+<h4 id="rtcdatetimedtnone-tuple-none"><code>rtc.datetime(dt=None)</code> → <code>tuple | None</code></h4>
+<p>Gets or sets the hardware RTC date/time.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>dt</code> — optional 7-tuple <code>(year, month, day, hour, minute, second, weekday)</code>. Omit to read.</li>
+</ul>
+<p><strong>Returns:</strong> <code>tuple</code> when reading, <code>None</code> when setting.</p>
+<hr>
+<h4 id="rtclocaltimetortc"><code>rtc.localtime<em>to</em>rtc()</code></h4>
+<p>Copies the current MicroPython <code>time.localtime()</code> into the hardware RTC.</p>
+<hr>
+<h4 id="rtcrtctolocaltime"><code>rtc.rtc<em>to</em>localtime()</code></h4>
+<p>Reads the hardware RTC and writes it into <code>machine.RTC()</code> (the software clock).</p>
+<hr>
+<h4 id="rtctimefromntp"><code>rtc.time<em>from</em>ntp()</code></h4>
+<p>Syncs time from an NTP server using <code>ntptime.settime()</code>, then copies it to the hardware RTC via <code>localtime<em>to</em>rtc()</code>. Deletes the <code>ntptime</code> module after use to reclaim memory.</p>
+<hr>
+<h4 id="rtcsettimerticks-enableinterrupttrue"><code>rtc.set<em>timer(ticks, enable</em>interrupt=True)</code></h4>
+<p>Configures the hardware countdown timer.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>ticks</code> — timer tick count (unit depends on PCF85063A configuration)</li>
+<li><code>enable_interrupt</code> — whether to enable the timer interrupt pin; default <code>True</code></li>
+</ul>
+<hr>
+<h4 id="rtctimer-elapsed-bool"><code>rtc.timer_elapsed()</code> → <code>bool</code></h4>
+<p>Returns <code>True</code> if the timer flag is set, then clears the flag.</p>
+<hr>
+<h4 id="rtcset-alarmhours0-minutes0-seconds0"><code>rtc.set_alarm(hours=0, minutes=0, seconds=0)</code></h4>
+<p>Sets a one-shot alarm relative to the current time.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>hours</code> — hours to add to the current time</li>
+<li><code>minutes</code> — minutes to add</li>
+<li><code>seconds</code> — seconds to add</li>
+</ul>
+<p>Enables both alarm and timer interrupts, clears existing flags.</p>
+<hr>
+<h4 id="rtcclear-alarm"><code>rtc.clear_alarm()</code></h4>
+<p>Disables the alarm interrupt, clears both alarm and timer flags, and unsets the alarm.</p>
+<hr>
+<h4 id="rtcalarm-status-bool"><code>rtc.alarm_status()</code> → <code>bool</code></h4>
+<p>Returns <code>True</code> if the RTC alarm pin is currently asserted (active low: <code>board.RTC_ALARM.value() == 0</code>).</p>
+<hr>
+<h2 id="module-badgewaresprite">Module: <code>badgeware.sprite</code></h2>
+<p>Exports <code>SpriteSheet</code> and <code>AnimatedSprite</code> to <code>builtins</code>.</p>
+<h3 id="class-spritesheet"><code>class SpriteSheet</code></h3>
+<p>A grid-sliced image containing named sprites.</p>
+<h4 id="spritesheetfile-columns-rows"><code>SpriteSheet(file, columns, rows)</code></h4>
+<p>Loads an image file and slices it into a <code>columns × rows</code> grid of equal-sized sprites.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>file</code> — path to the image file</li>
+<li><code>columns</code> — number of columns in the sprite grid</li>
+<li><code>rows</code> — number of rows in the sprite grid</li>
+</ul>
+<hr>
+<h4 id="spritesheetspritex-y-image"><code>SpriteSheet.sprite(x, y)</code> → <code>image</code></h4>
+<p>Returns the sprite at grid position <code>(x, y)</code> (zero-indexed, column-major).</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>x</code> — column index</li>
+<li><code>y</code> — row index</li>
+</ul>
+<hr>
+<h4 id="spritesheetanimationx0-y0-countnone-horizontaltrue-animatedsprite"><code>SpriteSheet.animation(x=0, y=0, count=None, horizontal=True)</code> → <code>AnimatedSprite</code></h4>
+<p>Creates an <code>AnimatedSprite</code> from a sequence of frames in this sheet.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>x</code> — starting column</li>
+<li><code>y</code> — starting row</li>
+<li><code>count</code> — number of frames; defaults to the full width of the sheet in sprite-widths</li>
+<li><code>horizontal</code> — if <code>True</code>, frames advance along columns; if <code>False</code>, along rows</li>
+</ul>
+<hr>
+<h3 id="class-animatedsprite"><code>class AnimatedSprite</code></h3>
+<p>A sequence of frames drawn from a <code>SpriteSheet</code>.</p>
+<h4 id="animatedspritespritesheet-x-y-count-horizontaltrue"><code>AnimatedSprite(spritesheet, x, y, count, horizontal=True)</code></h4>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>spritesheet</code> — the source <code>SpriteSheet</code></li>
+<li><code>x</code> — starting column</li>
+<li><code>y</code> — starting row</li>
+<li><code>count</code> — number of frames</li>
+<li><code>horizontal</code> — if <code>True</code>, frames advance along columns; if <code>False</code>, along rows</li>
+</ul>
+<hr>
+<h4 id="animatedspriteframeframe-index0-image"><code>AnimatedSprite.frame(frame_index=0)</code> → <code>image</code></h4>
+<p>Returns the <code>image</code> for the given frame. <code>frame_index</code> is wrapped modulo the total frame count and truncated to <code>int</code>.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>frame_index</code> — frame number (float or int; wraps around)</li>
+</ul>
+<hr>
+<h4 id="animatedspritecount-int"><code>AnimatedSprite.count()</code> → <code>int</code></h4>
+<p>Returns the total number of frames in the animation.</p>
+<hr>
+<h2 id="module-badgewarestate-builtinsstate">Module: <code>badgeware.state</code> → <code>builtins.State</code></h2>
+<p>JSON-based persistent state storage to the filesystem at <code>/state/&lt;app&gt;.json</code>.</p>
+<h3 id="class-state"><code>class State</code></h3>
+<p>All methods are <code>@staticmethod</code>.</p>
+<h4 id="stateloadapp-defaults-bool"><code>State.load(app, defaults)</code> → <code>bool</code></h4>
+<p>Reads <code>/state/&lt;app&gt;.json</code> into <code>defaults</code> (in-place update). If the file does not exist or is invalid, saves <code>defaults</code> as the initial state.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>app</code> — app name string (used as the filename stem)</li>
+<li><code>defaults</code> — <code>dict</code> of default values; modified in-place with loaded data</li>
+</ul>
+<p><strong>Returns:</strong> <code>True</code> if state was loaded successfully, <code>False</code> if defaults were saved.</p>
+<hr>
+<h4 id="statesaveapp-data"><code>State.save(app, data)</code></h4>
+<p>Writes <code>data</code> to <code>/state/&lt;app&gt;.json</code> as JSON. Creates the <code>/state/</code> directory if it does not exist.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>app</code> — app name string</li>
+<li><code>data</code> — JSON-serialisable <code>dict</code></li>
+</ul>
+<hr>
+<h4 id="statemodifyapp-data"><code>State.modify(app, data)</code></h4>
+<p>Loads the existing state for <code>app</code>, merges <code>data</code> into it (shallow update), then saves it back.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>app</code> — app name string</li>
+<li><code>data</code> — <code>dict</code> of keys to update</li>
+</ul>
+<hr>
+<h4 id="statedeleteapp"><code>State.delete(app)</code></h4>
+<p>Deletes <code>/state/&lt;app&gt;.json</code>. Silently ignores <code>OSError</code> if the file does not exist.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>app</code> — app name string</li>
+</ul>
+<hr>
+<h2 id="module-badgewaretext">Module: <code>badgeware.text</code></h2>
+<p>Exports <code>rom<em>font</code>, <code>load</em>font</code>, and <code>text</code> to <code>builtins</code>.</p>
+<h3 id="builtinsrom-font-romfonts"><code>builtins.rom_font</code> — <code>ROMFonts</code></h3>
+<p>Lazy-loading accessor for fonts stored in <code>/rom/fonts/</code>.</p>
+<h4 id="romfontltnamegt-pixelfont"><code>rom<em>font.&lt;name&gt;</code> → <code>pixel</em>font</code></h4>
+<p>Returns (and caches) a <code>pixel_font</code> loaded from <code>/rom/fonts/&lt;name&gt;.ppf</code>. Raises <code>AttributeError</code> if not found.</p>
+<h4 id="dirrom-font-liststr"><code>dir(rom_font)</code> → <code>list[str]</code></h4>
+<p>Returns the names of all <code>.ppf</code> fonts in <code>/rom/fonts/</code>.</p>
+<hr>
+<h3 id="loadfontfontfile-font-pixel-font"><code>load<em>font(font</em>file)</code> → <code>font | pixel_font</code></h3>
+<p>Searches for a font by name across several standard paths and both <code>.af</code> (vector) and <code>.ppf</code> (pixel) extensions. First checks <code>rom_font</code> for a ROM-resident font.</p>
+<p><strong>Search paths (in order):</strong></p>
+<ol>
+<li><code>rom<em>font.&lt;font</em>file&gt;</code> attribute</li>
+<li><code>/rom/fonts/&lt;name&gt;.ppf</code></li>
+<li><code>/system/assets/fonts/&lt;name&gt;</code></li>
+<li><code>/fonts/&lt;name&gt;</code></li>
+<li><code>/assets/&lt;name&gt;</code></li>
+<li><code>&lt;name&gt;</code> (relative)</li>
+</ol>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>font_file</code> — font name (with or without extension) or full path</li>
+</ul>
+<p><strong>Returns:</strong> <code>font</code> for <code>.af</code> files, <code>pixel_font</code> for <code>.ppf</code> files.</p>
+<p><strong>Raises:</strong> <code>OSError</code> if the font cannot be found.</p>
+<hr>
+<h3 id="class-text-builtinstext"><code>class _text</code> — <code>builtins.text</code></h3>
+<p>Static text rendering utilities. All methods are <code>@staticmethod</code>.</p>
+<h4 id="texttokeniseimage-text-glyph-renderersnone-size24-list"><code>text.tokenise(image, text, glyph_renderers=None, size=24)</code> → <code>list</code></h4>
+<p>Tokenises <code>text</code> into a list of <code>(type, width, data)</code> tuples suitable for <code>text.draw()</code>. Handles words, spaces, line breaks, and inline escape codes of the form <code>[code:param1,param2]</code>.</p>
+<p>Built-in escape code: <code>[pen:r,g,b]</code> — changes the current pen colour.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>image</code> — target <code>image</code> (used for text measurement)</li>
+<li><code>text</code> — source string</li>
+<li><code>glyph_renderers</code> — optional <code>dict</code> mapping code names to renderer callables; merged with built-in renderers</li>
+<li><code>size</code> — font size for vector fonts</li>
+</ul>
+<p><strong>Token format:</strong></p>
+<ul>
+<li>Word: <code>(1, width<em>px, "word</em>string")</code></li>
+<li>Space: <code>(2,)</code></li>
+<li>Line break: <code>(3,)</code></li>
+<li>Glyph: <code>(renderer<em>fn, width</em>px, (params...))</code></li>
+</ul>
+<hr>
+<h4 id="textdrawimage-text-boundsnone-linespacing1-wordspacing1-size24-rect"><code>text.draw(image, text, bounds=None, line<em>spacing=1, word</em>spacing=1, size=24)</code> → <code>rect</code></h4>
+<p>Renders wrapped text into an image, optionally clipped to <code>bounds</code>. Supports pre-tokenised input.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>image</code> — target <code>image</code> to draw into</li>
+<li><code>text</code> — <code>str</code> or pre-tokenised list from <code>text.tokenise()</code></li>
+<li><code>bounds</code> — optional <code>rect</code> to constrain rendering; defaults to the full image</li>
+<li><code>line_spacing</code> — multiplier for line height; default <code>1</code></li>
+<li><code>word_spacing</code> — multiplier for inter-word space; default <code>1</code></li>
+<li><code>size</code> — font size for vector fonts</li>
+</ul>
+<p><strong>Returns:</strong> <code>rect</code> representing the bounding box of the rendered text.</p>
+<hr>
+<h4 id="textscrolltext-fontfacenone-fontsizenone-targetnone-speed25-gapnone-alignmiddle-callable"><code>text.scroll(text, font<em>face=None, font</em>size=None, target=None, speed=25, gap=None, align="middle")</code> → <code>callable</code></h4>
+<p>Returns an <code>update()</code> function that, when called repeatedly in a loop, draws horizontally-scrolling text. Designed to be passed to <code>run()</code>.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>text</code> — string to scroll</li>
+<li><code>font<em>face</code> — font object; defaults to <code>rom</em>font.sins</code></li>
+<li><code>font_size</code> — required for vector (<code>font</code>) faces; ignored for pixel fonts</li>
+<li><code>target</code> — target <code>image</code>; defaults to <code>screen</code></li>
+<li><code>speed</code> — scroll speed in pixels per second; default <code>25</code></li>
+<li><code>gap</code> — <code>int</code> gap between repetitions; <code>None</code> uses the full target width</li>
+<li><code>align</code> — vertical alignment: <code>"middle"</code> (default), <code>"bottom"</code>, or <code>int</code> pixel offset</li>
+</ul>
+<p><strong>Returns:</strong> a no-argument callable that draws one scroll frame and returns a <code>float</code> progress value <code>[0.0, 1.0]</code>.</p>
+<hr>
+<h2 id="additional-common-modules">Additional Common Modules</h2>
+<h3 id="modulescommonwifipy"><code>modules/common/wifi.py</code></h3>
+<p>WiFi connection management. Not exported to builtins; must be imported with <code>import wifi</code>.</p>
+<h4 id="wificonnectssidnone-psknone-timeout60-retries5-bool"><code>wifi.connect(ssid=None, psk=None, timeout=60, retries=5)</code> → <code>bool</code></h4>
+<p>Initiates a WiFi connection. Reads credentials from <code>secrets.py</code> if not provided. Returns <code>True</code> if already connected.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>ssid</code> — network SSID; reads <code>secrets.WIFI_SSID</code> if <code>None</code></li>
+<li><code>psk</code> — network password; reads <code>secrets.WIFI_PASSWORD</code> if <code>None</code></li>
+<li><code>timeout</code> — seconds before retrying; default <code>60</code></li>
+<li><code>retries</code> — number of retry attempts; default <code>5</code></li>
+</ul>
+<p><strong>Returns:</strong> <code>True</code> if immediately connected, <code>False</code> if connection is in progress.</p>
+<hr>
+<h4 id="wifitick-bool"><code>wifi.tick()</code> → <code>bool</code></h4>
+<p>Checks connection progress. Call in a loop until it returns <code>True</code>. Handles timeouts and errors, retrying as configured. Calls <code>fatal_error()</code> if all retries are exhausted.</p>
+<p><strong>Returns:</strong> <code>True</code> when connected.</p>
+<hr>
+<h4 id="wifidisconnect"><code>wifi.disconnect()</code></h4>
+<p>Disconnects and deactivates the WLAN interface.</p>
+<hr>
+<h4 id="wifiis-connected-bool"><code>wifi.is_connected()</code> → <code>bool</code></h4>
+<p>Returns <code>True</code> if WLAN is connected.</p>
+<hr>
+<h4 id="wifistatus-tupleint-str"><code>wifi.status()</code> → <code>tuple[int, str]</code></h4>
+<p>Returns <code>(status<em>code, human</em>readable<em>status</em>string)</code>.</p>
+<hr>
+<h4 id="wifiip-wifiipv4-str-none"><code>wifi.ip()</code> / <code>wifi.ipv4()</code> → <code>str | None</code></h4>
+<p>Returns the IPv4 address string, or <code>None</code> if not connected.</p>
+<hr>
+<h4 id="wifiipv6-str-none"><code>wifi.ipv6()</code> → <code>str | None</code></h4>
+<p>Returns the IPv6 address string, or <code>None</code> if not connected.</p>
+<hr>
+<h4 id="wifisubnet-str-none"><code>wifi.subnet()</code> → <code>str | None</code></h4>
+<p>Returns the subnet mask string.</p>
+<hr>
+<h4 id="wifigateway-str-none"><code>wifi.gateway()</code> → <code>str | None</code></h4>
+<p>Returns the default gateway IP string.</p>
+<hr>
+<h4 id="wifinameserver-str-none"><code>wifi.nameserver()</code> → <code>str | None</code></h4>
+<p>Returns the DNS nameserver IP string.</p>
+<hr>
+<h3 id="modulescommonsecretspy"><code>modules/common/secrets.py</code></h3>
+<p>Secrets loader. Imports from <code>/secrets.py</code> (user filesystem) or falls back to <code>/system/secrets.py</code>.</p>
+<h4 id="secretsrequirekeys"><code>secrets.require(*keys)</code></h4>
+<p>Checks that each named secret in <code>keys</code> is set (non-<code>None</code>, non-empty). Calls <code>fatal_error()</code> with a disk-mode prompt if any are missing.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>*keys</code> — variable number of secret name strings (e.g. <code>"WIFI_SSID"</code>, <code>"TIMEZONE"</code>)</li>
+</ul>
+<hr>
+<h3 id="modulescommoneasingpy"><code>modules/common/easing.py</code></h3>
+<p>24 easing functions. All take a single <code>float x</code> in <code>[0.0, 1.0]</code> and return a <code>float</code> in approximately the same range.</p>
+<p>| Function | Style |</p>
+<p>|----------|-------|</p>
+<p>| <code>linear(x)</code> | Linear |</p>
+<p>| <code>easeInQuad(x)</code> | Quadratic in |</p>
+<p>| <code>easeOutQuad(x)</code> | Quadratic out |</p>
+<p>| <code>easeInOutQuad(x)</code> | Quadratic in-out |</p>
+<p>| <code>easeInCubic(x)</code> | Cubic in |</p>
+<p>| <code>easeOutCubic(x)</code> | Cubic out |</p>
+<p>| <code>easeInOutCubic(x)</code> | Cubic in-out |</p>
+<p>| <code>easeInQuart(x)</code> | Quartic in |</p>
+<p>| <code>easeOutQuart(x)</code> | Quartic out |</p>
+<p>| <code>easeInOutQuart(x)</code> | Quartic in-out |</p>
+<p>| <code>easeInQuint(x)</code> | Quintic in |</p>
+<p>| <code>easeOutQuint(x)</code> | Quintic out |</p>
+<p>| <code>easeInOutQuint(x)</code> | Quintic in-out |</p>
+<p>| <code>easeInSine(x)</code> | Sinusoidal in |</p>
+<p>| <code>easeOutSine(x)</code> | Sinusoidal out |</p>
+<p>| <code>easeInOutSine(x)</code> | Sinusoidal in-out |</p>
+<p>| <code>easeInExpo(x)</code> | Exponential in |</p>
+<p>| <code>easeOutExpo(x)</code> | Exponential out |</p>
+<p>| <code>easeInOutExpo(x)</code> | Exponential in-out |</p>
+<p>| <code>easeInCirc(x)</code> | Circular in |</p>
+<p>| <code>easeOutCirc(x)</code> | Circular out |</p>
+<p>| <code>easeInOutCirc(x)</code> | Circular in-out |</p>
+<p>| <code>easeInBack(x)</code> | Back (overshoot) in |</p>
+<p>| <code>easeOutBack(x)</code> | Back (overshoot) out |</p>
+<p>| <code>easeInOutBack(x)</code> | Back (overshoot) in-out |</p>
+<p>| <code>easeInElastic(x)</code> | Elastic in |</p>
+<p>| <code>easeOutElastic(x)</code> | Elastic out |</p>
+<p>| <code>easeInOutElastic(x)</code> | Elastic in-out |</p>
+<p>| <code>easeInBounce(x)</code> | Bounce in |</p>
+<p>| <code>easeOutBounce(x)</code> | Bounce out |</p>
+<p>| <code>easeInOutBounce(x)</code> | Bounce in-out |</p>
+<p>Not exported to builtins; must be imported with <code>from easing import *</code> or <code>import easing</code>.</p>
+<hr>
+<h3 id="modulescommonlsm6ds3py-class-lsm6ds3"><code>modules/common/lsm6ds3.py</code> — <code>class LSM6DS3</code></h3>
+<p>Driver for the ST LSM6DS3 6-axis IMU.</p>
+<h4 id="lsm6ds3i2c-address0x6a-modenormalmode104hz"><code>LSM6DS3(i2c, address=0x6A, mode=NORMAL<em>MODE</em>104HZ)</code></h4>
+<p>Initialises the sensor: sets gyro and accel mode, enables step counter, tap detection (X/Y/Z), and double-tap.</p>
+<p>| Mode Constant | Description |</p>
+<p>|---------------|-------------|</p>
+<p>| <code>NORMAL<em>MODE</em>104HZ</code> | Normal power, 104 Hz ODR |</p>
+<p>| <code>NORMAL<em>MODE</em>208HZ</code> | Normal power, 208 Hz ODR |</p>
+<p>| <code>PERFORMANCE<em>MODE</em>416HZ</code> | High performance, 416 Hz ODR |</p>
+<p>| <code>LOW<em>POWER</em>26HZ</code> | Low power, 26 Hz ODR |</p>
+<h4 id="lsm6ds3get-readings-tupleint-int-int-int-int-int"><code>LSM6DS3.get_readings()</code> → <code>tuple[int, int, int, int, int, int]</code></h4>
+<p>Returns <code>(ax, ay, az, gx, gy, gz)</code> as signed 16-bit integers (two's complement). Reads all 12 data bytes in a single I2C transaction.</p>
+<h4 id="lsm6ds3getstepcount-int"><code>LSM6DS3.get<em>step</em>count()</code> → <code>int</code></h4>
+<p>Returns the current pedometer step count.</p>
+<h4 id="lsm6ds3resetstepcount"><code>LSM6DS3.reset<em>step</em>count()</code></h4>
+<p>Resets the step counter to zero and re-enables sensor functions.</p>
+<h4 id="lsm6ds3tilt-detected-int"><code>LSM6DS3.tilt_detected()</code> → <code>int</code></h4>
+<p>Returns <code>1</code> if a tilt event is detected, else <code>0</code>.</p>
+<h4 id="lsm6ds3sigmotiondetected-int"><code>LSM6DS3.sig<em>motion</em>detected()</code> → <code>int</code></h4>
+<p>Returns <code>1</code> if significant motion is detected, else <code>0</code>.</p>
+<h4 id="lsm6ds3singletapdetected-int"><code>LSM6DS3.single<em>tap</em>detected()</code> → <code>int</code></h4>
+<p>Returns <code>1</code> if a single tap is detected this frame, else <code>0</code>.</p>
+<h4 id="lsm6ds3doubletapdetected-int"><code>LSM6DS3.double<em>tap</em>detected()</code> → <code>int</code></h4>
+<p>Returns <code>1</code> if a double tap is detected this frame, else <code>0</code>.</p>
+<h4 id="lsm6ds3freefall-detected-int"><code>LSM6DS3.freefall_detected()</code> → <code>int</code></h4>
+<p>Returns non-zero if a freefall event is detected.</p>
+<hr>
+<h3 id="modulescommonpimoronipy"><code>modules/common/pimoroni.py</code></h3>
+<p>Hardware utility classes. Not exported to builtins.</p>
+<h4 id="class-analog"><code>class Analog</code></h4>
+<p>ADC voltage/current reader with gain, resistor shunt, and offset compensation.</p>
+<ul>
+<li><code>Analog(pin, amplifier_gain=1, resistor=0, offset=0)</code></li>
+<li><code>read_voltage()</code> → <code>float</code> — voltage in volts</li>
+<li><code>read_current()</code> → <code>float</code> — current in amps (requires <code>resistor &gt; 0</code>)</li>
+</ul>
+<h4 id="class-analogmux"><code>class AnalogMux</code></h4>
+<p>Multiplexed ADC using up to 3 address pins and an optional enable pin.</p>
+<ul>
+<li><code>AnalogMux(addr0, addr1=None, addr2=None, en=None, muxed_pin=None)</code></li>
+<li><code>select(address)</code> — selects the given mux channel</li>
+<li><code>disable()</code> — disables the mux via the enable pin</li>
+<li><code>configure_pull(address, pull=None)</code> — sets the pull mode for a channel</li>
+<li><code>read()</code> → <code>int</code> — reads the value of the muxed pin</li>
+</ul>
+<h4 id="class-button"><code>class Button</code></h4>
+<p>Debounced button with repeat and hold support.</p>
+<ul>
+<li><code>Button(button, invert=True, repeat<em>time=200, hold</em>time=1000)</code></li>
+<li><code>read()</code> → <code>bool</code> — returns <code>True</code> on press/repeat events</li>
+<li><code>raw()</code> → <code>bool</code> — raw pin state</li>
+<li><code>is_pressed</code> <em>(property)</em> → <code>bool</code></li>
+</ul>
+<h4 id="class-rgbled"><code>class RGBLED</code></h4>
+<p>PWM RGB LED driver.</p>
+<ul>
+<li><code>RGBLED(r="LED<em>R", g="LED</em>G", b="LED_B", invert=True)</code></li>
+<li><code>set_rgb(r, g, b)</code> — sets colour with 0–255 per channel</li>
+</ul>
+<h4 id="class-pid"><code>class PID</code></h4>
+<p>Proportional-Integral-Derivative controller.</p>
+<ul>
+<li><code>PID(kp, ki, kd, sample_rate)</code></li>
+<li><code>calculate(value, value_change=None)</code> → <code>float</code> — returns PID output</li>
+</ul>
+<h4 id="class-buzzer"><code>class Buzzer</code></h4>
+<p>PWM buzzer/speaker.</p>
+<ul>
+<li><code>Buzzer(pin)</code></li>
+<li><code>set_tone(freq, duty=0.5)</code> → <code>bool</code> — sets frequency and duty cycle; returns <code>False</code> if <code>freq &lt; 50</code></li>
+</ul>
+<h4 id="class-shiftregister"><code>class ShiftRegister</code></h4>
+<p>8-bit parallel-in shift register reader.</p>
+<ul>
+<li><code>ShiftRegister(clk, lat, dat)</code></li>
+<li><code>read()</code> → <code>int</code> — reads 8-bit value</li>
+<li><code>is_set(mask)</code> → <code>bool</code> — checks if all bits in <code>mask</code> are set</li>
+<li><code><strong>iter</strong></code> — yields 8 individual bit values</li>
+</ul>
+<h4 id="class-pwmled"><code>class PWMLED</code></h4>
+<p>PWM-controlled LED with brightness, on/off, and toggle.</p>
+<ul>
+<li><code>PWMLED(pin, invert=False)</code></li>
+<li><code>brightness(brightness)</code> — sets brightness <code>[0.0, 1.0]</code></li>
+<li><code>on()</code> — sets brightness to 1.0</li>
+<li><code>off()</code> — sets brightness to 0.0</li>
+<li><code>toggle()</code> — toggles between 0.0 and 1.0</li>
+</ul>
+<hr>
+<h3 id="modulescommonqwstpadpy-class-qwstpad"><code>modules/common/qwstpad.py</code> — <code>class QwSTPad</code></h3>
+<p>Driver for the Pimoroni QwSTPad I2C game controller (TCA9555 I/O expander).</p>
+<h4 id="qwstpadi2c-addressdefaultaddress-showaddresstrue"><code>QwSTPad(i2c, address=DEFAULT<em>ADDRESS, show</em>address=True)</code></h4>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>i2c</code> — <code>machine.I2C</code> instance</li>
+<li><code>address</code> — one of <code>0x21</code>, <code>0x23</code>, <code>0x25</code>, <code>0x27</code>; raises <code>ValueError</code> for invalid addresses</li>
+<li><code>show_address</code> — if <code>True</code>, illuminates the LED corresponding to the I2C address position</li>
+</ul>
+<h4 id="qwstpadread-buttons-ordereddict"><code>QwSTPad.read_buttons()</code> → <code>OrderedDict</code></h4>
+<p>Returns a dict mapping button name → <code>bool</code> for all 10 buttons: <code>A</code>, <code>B</code>, <code>X</code>, <code>Y</code>, <code>U</code> (up), <code>D</code> (down), <code>L</code> (left), <code>R</code> (right), <code>+</code>, <code>-</code>.</p>
+<h4 id="qwstpadset-ledsstates"><code>QwSTPad.set_leds(states)</code></h4>
+<p>Sets all 4 LEDs from a 4-bit bitmask.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>states</code> — <code>int</code> bitmask (bits 0–3 correspond to LEDs 1–4)</li>
+</ul>
+<h4 id="qwstpadset-ledled-state"><code>QwSTPad.set_led(led, state)</code></h4>
+<p>Sets a single LED on or off.</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>led</code> — LED index <code>1</code>–<code>4</code>; raises <code>ValueError</code> for out-of-range</li>
+<li><code>state</code> — <code>bool</code></li>
+</ul>
+<h4 id="qwstpadclear-leds"><code>QwSTPad.clear_leds()</code></h4>
+<p>Turns off all four LEDs.</p>
+<h4 id="qwstpadaddress-code-int"><code>QwSTPad.address_code()</code> → <code>int</code></h4>
+<p>Returns a bitmask with the bit set that corresponds to this device's I2C address index (0–3).</p>
+  </main>
+</div>
+<script>function toggleTheme(){var c=document.documentElement.getAttribute("data-theme");var n=c==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("theme",n)}catch(e){}}(function(){var d=document.getElementById("toc-details");if(d&&window.innerWidth>900){d.setAttribute("open","");}})();</script>
+</body>
+</html>
