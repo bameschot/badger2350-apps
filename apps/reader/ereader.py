@@ -3,17 +3,14 @@ import os
 from picobook import *
 
 
-# USER FILE
-# -> last-book
-#   -> title
-#   -> last-chunk
-#   -> last-line
+BOOKMARKS_FILE_NAME = "bookmarks.json"
 
-# BOOKMARK FILE
-# -> bookmark
-#   -> title
-#   -> last-chunk
-#   -> last-line
+# BOOKMARKS FILE
+# -> bookmarks
+#   -> [bookmark]*
+#       -> title
+#       -> chunk-idx
+#       -> line
 
 class EReader:
     def __init__(self, booksDirectory, userDataDirectory, linesPerScreen, charactersPerLine):
@@ -23,14 +20,14 @@ class EReader:
         self.charactersPerLine = charactersPerLine
 
         self.loadedTitles = []
+        self.bookmarks = None
 
+        self.currentBookmark = None
         self.currentBookMetaData = None
-        self.currentBookChunkIdx = None
-        self.currentPageLine = None
         self.currentPageViewLines = []
 
 
-    def loadTitles(self):
+    def loadBookTitles(self):
         """
         load a all titles available in the books directory and store them indexed with the path to the book
         """ 
@@ -45,17 +42,19 @@ class EReader:
                     })
                 del metaData
             
-            print(self.loadedTitles)
+        print(self.loadedTitles)
+        self.loadBookmarks()
     
     def loadBook(self,idx):
         """
-        load a book based on the index of the loaded book and set the book the last read position from the userfile or create a new 
+        load a book based on the index of the loaded book and set the book the last read position from the bookmark
         """ 
         with open(self.loadedTitles[idx]["path"],"rb") as picobook:
             self.currentBookMetaData = readPicoBookMetaData(picobook)
-            self.currentBookChunkIdx = 0
-            self.setCurrentPageViewLinesFromText(readPicoBookChunks(picobook, self.currentBookMetaData,self.currentBookChunk,1))
-            self.currentPageLine = 0
+            self.currentBookmark = self.findBookmark(self.loadedTitles[idx]["title"])
+            self.setCurrentPageViewLinesFromText(
+                readPicoBookChunks(picobook, self.currentBookMetaData,self.currentBookmark["chunk-idx"],1)
+            )
 
     def resetStream(self,stream):
         """
@@ -102,16 +101,70 @@ class EReader:
             # otherwise just add the token
             elif len(token)>0:
                     currentLineStream.write(token) 
-                    currentLineStream.write(' ') 
-                
+                    currentLineStream.write(' ')
 
+    def loadBookmarks(self):
+        """
+        load (and create if not exists) the bookmarks file and add a new bookmark for any title that does not exist yet
+        """
+        bookmarksFilePath = self.userDataDirectory+"/"+BOOKMARKS_FILE_NAME
 
+        # check if the file exists, and if not create a new one
+        if not os.path.exists(bookmarksFilePath):
+            with open(bookmarksFilePath,"w") as bookmarksFile:
+                json.dump({"bookmarks":[]},bookmarksFile)
 
+        # read the bookmarks file
+        with open(bookmarksFilePath,"r") as bookmarksFile:
+            bookmarks = json.load(bookmarksFile)
+        
+        # for each title check if the bookmarks file exists and create an empty entry if it does not
+        modifiedBookmarks = False
+        for title in self.loadedTitles:
+            bookmarkExists = False
+            for bookmark in bookmarks["bookmarks"]:
+                if title["title"] in bookmark["title"]:
+                    bookmarkExists = True
+                    break 
+            if not bookmarkExists:
+                bookmarks["bookmarks"].append(self.createBookmark(title["title"],0,0))
+                modifiedBookmarks = True
 
+        # if the bookmarks where modified during the loading write them out again
+        if modifiedBookmarks:
+            with open(bookmarksFilePath,"w") as bookmarksFile:
+                json.dump(bookmarks,bookmarksFile)
 
+        self.bookmarks = bookmarks["bookmarks"]
 
+    def findBookmark(self,title):
+        """
+        finds a loaded bookmark by title
+        """
+        for bookmark in self.bookmarks:
+            if bookmark["title"] == title:
+                return bookmark
+        raise Exception(f"bookmark for title {title} not found")
+
+ 
+    def createBookmark(self, title, chunkIdx, line):
+        """
+        Create a bookmark dictionary
+        """
+        return {
+            "title": title,
+            "chunk-idx": chunkIdx,
+            "line": line
+        }
+    
+    def nextPage(self):
+        currentLine = self.currentBookmark["line"]
         
 
+    def previousPage(self):
+        pass
+
+                    
 
 ereader = EReader(
     "./apps/reader/books",
@@ -120,7 +173,7 @@ ereader = EReader(
     80
 )
 
-ereader.loadTitles()
+ereader.loadBookTitles()
 ereader.loadBook(0)    
 
 print("----")
