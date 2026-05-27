@@ -47,7 +47,7 @@ def createMetadata(
     author = None,
     publisher = None,
     year = None,
-    chaptersDict = None,
+    chapters = None, 
     chunkInfoDict = None
 ):
     metaData = {
@@ -60,12 +60,19 @@ def createMetadata(
         metaData["publisher"] = publisher
     if year != None:
         metaData["author"] = year
-    if chaptersDict != None:
-        metaData["chapters"] = chaptersDict
+    if chapters != None:
+        metaData["chapters"] = chapters
     if chunkInfoDict != None:
         metaData["chunk-info"] = chunkInfoDict
 
     return json.dumps(metaData)
+
+def createChapter(idx,title,chunkStartIdx):
+    return {
+        "idx": idx,
+        "title": title,
+        "chunk-start-idx": chunkStartIdx
+    }
 
 
 def createChunk(inputBytes,chunkIdx):
@@ -86,13 +93,17 @@ def convertTxtFileToPicoBook(
     author = None,
     publisher = None,
     year = None,
-    contentSizeBytes = 1024*10):
+    contentSizeBytes = 1024*10,
+    autoChapterFrequency = 10
+    ):
 
     chunkInfoDict = {
         "chunk-total": 0,
         "content-size-bytes": contentSizeBytes,
         "chunk-start-indexes": []
     }
+
+    chapters = []
 
 
     # create the chunks and fill in the chunk data
@@ -114,7 +125,11 @@ def convertTxtFileToPicoBook(
         newChunkStartIndex = lastChunkStartIndex+len(chunkBytes)
         chunkInfoDict["chunk-start-indexes"].append(lastChunkStartIndex)
         lastChunkStartIndex=newChunkStartIndex
-        
+
+        # if chunk index matches the auto chapter frequency
+        if autoChapterFrequency!= None and chunkIdx % autoChapterFrequency == 0:
+            chapters.append(createChapter(len(chapters),f"Chapter {len(chapters)+1}",chunkIdx))
+
         chunkIdx+=1
     
     # register the total amount of chunks in the book
@@ -126,7 +141,7 @@ def convertTxtFileToPicoBook(
                 author=author,
                 publisher=publisher,
                 year=year,
-                chaptersDict=None,
+                chapters=chapters,
                 chunkInfoDict=chunkInfoDict
             )
     
@@ -272,8 +287,8 @@ with open('./king-in-yellow.pb',"rb") as picoBook:
     print(text)
     print(metaData)
 
-with open('./king-in-yellow.pb',"rb") as picoBook:
-    print(readPicoBookChunks(picoBook))
+# with open('./king-in-yellow.pb',"rb") as picoBook:
+#    print(readPicoBookChunks(picoBook))
 
 
 
