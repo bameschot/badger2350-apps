@@ -1,5 +1,13 @@
-import json 
-import gzip
+import platform
+IS_MICRO_PYTHON = "MicroPython" in str(platform.platform())
+
+import json
+import io
+
+if IS_MICRO_PYTHON:  
+    import deflate
+else:
+    import gzip
 
 # FILE STRUCTURE
 #  1. MAGIC_BYTES (4 bytes) = sanity check to detect picobook format (0xA4,0xB4,0xC4,0xD4)
@@ -37,10 +45,20 @@ PICOBOOK_PICOBOOK_MAGIC_BYTES = bytes([0xa4,0xb4,0xc4,0xd4])
 PICOBOOK_PICOBOOK_VERSION_BYTES = bytes([0x00,0x01])
 
 def compress(uncompressedBytes):
-    return gzip.compress(uncompressedBytes,compresslevel=6)
+    if IS_MICRO_PYTHON:
+        stream = io.BytesIO()
+        with deflate.DeflateIO(stream, deflate.GZIP) as d:
+            d.write(uncompressedBytes)
+        return stream.getvalue()
+    else:
+        return gzip.compress(uncompressedBytes,compresslevel=6)
 
 def decompress(compressedBytes):
-    return gzip.decompress(compressedBytes)
+    if IS_MICRO_PYTHON:
+        return deflate.DeflateIO(io.BytesIO(compressedBytes), deflate.GZIP).read() 
+    else:
+        return gzip.decompress(compressedBytes)
+
 
 def createMetadata(
     title,    
@@ -50,6 +68,9 @@ def createMetadata(
     chapters = None, 
     chunkInfoDict = None
 ):
+    """
+    Creates a metadata dictionary
+    """ 
     metaData = {
         "title": title        
     }
@@ -68,6 +89,9 @@ def createMetadata(
     return json.dumps(metaData)
 
 def createChapter(idx,title,chunkStartIdx):
+    """
+    Creates a chapter dictionary
+    """ 
     return {
         "idx": idx,
         "title": title,
@@ -76,6 +100,9 @@ def createChapter(idx,title,chunkStartIdx):
 
 
 def createChunk(inputBytes,chunkIdx):
+    """
+    Create a single chunk based on an input bytestream and encode the chunk index and gzip size with the compressed chunk data
+    """ 
     chunkIdxBytes = chunkIdx.to_bytes(4)
     compressedBytes = compress(inputBytes)
     compressedSizeBytes = len(compressedBytes).to_bytes(4)
@@ -96,7 +123,10 @@ def convertTxtFileToPicoBook(
     contentSizeBytes = 1024*10,
     autoChapterFrequency = 10
     ):
-
+    """
+    Convert a input bytestream to a picobook outputstream.
+    Allows setting the chunksize and authomatically adding chapters based on chunks
+    """ 
     chunkInfoDict = {
         "chunk-total": 0,
         "content-size-bytes": contentSizeBytes,
@@ -149,6 +179,9 @@ def convertTxtFileToPicoBook(
         
 
 def writePicoBook(picoBookStream,metaData,chunks):
+    """
+    Write the provided meta data and chunks as a picobook outputstream adding the required headers
+    """ 
     metaDataBytes = compress(bytes(metaData,PICOBOOK_STR_ENCODING)) 
     print(f"metadata: {metaData}")
 
@@ -166,17 +199,23 @@ def writePicoBook(picoBookStream,metaData,chunks):
 
 
 def readChunk(picoBookStream):
+    """
+    Read and uncompress an individual chunk from the provided picobook stream
+    """ 
     # read the chunk index and the size of the compressed dat in the chunk in bytes
     chunkIdx = int.from_bytes(picoBookStream.read(4))
     compressedSizeBytes = int.from_bytes(picoBookStream.read(4))
 
-    print(f"chunk: {chunkIdx:06d} compressed size: {compressedSizeBytes:08d}b")
+    print(f"read chunk: {chunkIdx:06d} compressed size: {compressedSizeBytes:08d}b")
 
     # decompress the data and turn it into a string
     chunkBytes = decompress(picoBookStream.read(compressedSizeBytes))
     return chunkBytes.decode(PICOBOOK_STR_ENCODING,"replace")
 
 def readPicoBookHeader(picoBookStream,readMetaData=True):
+    """
+    Read and uncompress the picobook header and meta data from the provided picobook stream
+    """ 
     # read and validate the magic bytes
     picobookMagicBytes = picoBookStream.read(len(PICOBOOK_PICOBOOK_MAGIC_BYTES))
     if picobookMagicBytes != PICOBOOK_PICOBOOK_MAGIC_BYTES:
@@ -213,6 +252,9 @@ def readPicoBookHeader(picoBookStream,readMetaData=True):
     
 
 def readPicoBook(picoBookFilePath):
+    """
+    Read a picobook file in full and return the metadata and chunks in a dictionary
+    """ 
     with open(picoBookFilePath,"rb") as picoBook:
 
         # read the picobook header
@@ -227,13 +269,20 @@ def readPicoBook(picoBookFilePath):
         return {"meta-data":metaData,"text": text}
     
 def readPicoBookMetaData(picoBookStream):
-        # read the picobook header
-        return readPicoBookHeader(picoBookStream)["meta-data"]
+    """
+    Read a picobook metadata from a given picobookstream
+    """ 
+    # read the picobook header
+    return readPicoBookHeader(picoBookStream)["meta-data"]
 
     
 def readPicoBookChunks(picoBookStream,metaData=None,chunkIdx=0,chunksToRead=None):
+    """
+    Read the requested picobook chunk (range) from the given picobook stream. the stream provided is always reset before read. 
+    If no metadata is provided the function will unzip and decode the metadata. if no range is provided the function reads the whole picobook.
+    """ 
     # reset, function assumes it starts from the beginning of the file
-    picoBook.seek(0)
+    picoBookStream.seek(0)
 
     # read the picobook header, ommit parsing the meta data if indicated
     header = readPicoBookHeader(picoBookStream,False if metaData!=None else True)
@@ -261,31 +310,31 @@ def readPicoBookChunks(picoBookStream,metaData=None,chunkIdx=0,chunksToRead=None
             
 
 # write
-with open('./king-in-yellow.txt', "rb") as inputFile:
-    with open('./king-in-yellow.pb', "wb") as outputFile:
-        convertTxtFileToPicoBook(inputFile,outputFile,'king in yellow')
+# with open('./king-in-yellow.txt', "rb") as inputFile:
+#     with open('./king-in-yellow.pb', "wb") as outputFile:
+#         convertTxtFileToPicoBook(inputFile,outputFile,'king in yellow')
 
 
 # read
-with open('./king-in-yellow.pb',"rb") as picoBook:
-    picobookFull = readPicoBook("./king-in-yellow.pb")
-    print(picobookFull["text"])
-    print(picobookFull["meta-data"])
-print("--------")
+# with open('./king-in-yellow.pb',"rb") as picoBook:
+#     picobookFull = readPicoBook("./king-in-yellow.pb")
+#     print(picobookFull["text"])
+#     print(picobookFull["meta-data"])
+# print("--------")
 
 
-with open('./king-in-yellow.pb',"rb") as picoBook:
-    chunkTxt = readPicoBookChunks(picoBook, picobookFull["meta-data"],41,1)
-    print(chunkTxt)
-print("--------")
+# with open('./king-in-yellow.pb',"rb") as picoBook:
+#     chunkTxt = readPicoBookChunks(picoBook, picobookFull["meta-data"],41,1)
+#     print(chunkTxt)
+# print("--------")
 
-with open('./king-in-yellow.pb',"rb") as picoBook:
-    # read meta data 
-    metaData = readPicoBookMetaData(picoBook)
-    # read the entire book's chunks
-    text = readPicoBookChunks(picoBook,metaData)
-    print(text)
-    print(metaData)
+# with open('./king-in-yellow.pb',"rb") as picoBook:
+#     # read meta data 
+#     metaData = readPicoBookMetaData(picoBook)
+#     # read the entire book's chunks
+#     text = readPicoBookChunks(picoBook,metaData)
+#     print(text)
+#     print(metaData)
 
 # with open('./king-in-yellow.pb',"rb") as picoBook:
 #    print(readPicoBookChunks(picoBook))
