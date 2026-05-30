@@ -10,21 +10,24 @@ BOOKMARKS_FILE_NAME = "bookmarks.json"
 #   -> [bookmark]*
 #       -> title
 #       -> chunk-idx
-#       -> line
+#       -> page-idx
+#       -> characters-per-line
+#       -> lines-per-page
 
 class EReader:
     def __init__(self, booksDirectory, userDataDirectory, linesPerScreen, charactersPerLine):
         self.booksDirectory = booksDirectory
         self.userDataDirectory = userDataDirectory
-        self.linesPerScreen = linesPerScreen
-        self.charactersPerLine = charactersPerLine
+        self.defaultLinesPerPage = linesPerScreen
+        self.defaultCharactersPerLine = charactersPerLine
 
         self.loadedTitles = []
         self.bookmarks = None
 
+        self.viewPages = None
+
         self.currentBookmark = None
         self.currentBookMetaData = None
-        self.currentPageViewLines = []
 
 
     def loadBookTitles(self):
@@ -55,11 +58,21 @@ class EReader:
 
         :return: None
         """ 
+        # open the file indicated by the index
         with open(self.loadedTitles[bookIdx]["path"],"rb") as picobook:
-            self.currentBookMetaData = readPicoBookMetaData(picobook)
+
+            # load the book's bookmark based on the tile
             self.currentBookmark = self.findBookmark(self.loadedTitles[bookIdx]["title"])
-            self.readLinesFromText(
-                readPicoBookChunks(picobook, self.currentBookMetaData,self.currentBookmark["chunk-idx"],1)
+
+            # load the book's meta data 
+            self.currentBookMetaData = readPicoBookMetaData(picobook)
+
+            # load the bookmarked chunk and paginate it according to the bookmark's settings
+            self.viewPages = self.paginateLines(
+                self.readLinesFromText(
+                    readPicoBookChunks(picobook, self.currentBookMetaData,self.currentBookmark["chunk-idx"],1),
+                    self.currentBookmark["characters-per-line"]
+                ),self.currentBookmark["lines-per-page"]
             )
 
     def resetStream(self,stream):
@@ -75,26 +88,28 @@ class EReader:
         stream.seek(0)
         return stream
 
-    def readLinesFromText(self,text):
+    def readLinesFromText(self,text,charactersPerLine):
         """
         reads the given text into lines taking into account the character width of the ereader
 
         :param text: the text to parse into lines 
+        :param charactersPerLine: the number of characters allowed per line
 
         :return: a the text as a list of lines
         """ 
         lines = []
         currentLine = io.StringIO()
-        self.distributeTokensIntoLines(text.split(' '),lines ,currentLine)
+        self.distributeTokensIntoLines(text.split(' '),charactersPerLine,lines ,currentLine)
         
         return lines
     
 
-    def distributeTokensIntoLines(self,tokens,lines,currentLineStream):
+    def distributeTokensIntoLines(self,tokens,charactersPerLine,lines,currentLineStream):
         """
         Distributes a given whitespace tokenized text in lines taking into account the maximum line length, lines are added to the lines paramer
 
         :param tokens: a list of individual tokens (text split on ' ') that needs to be distrubuted across lines
+        :param charactersPerLine: the number of characters allowed per line
         :param lines: a list of lines to add the result lines to
         :currentLineStream: a stream object that is used as a stringbuffer to add tokens to a line to
 
@@ -110,13 +125,13 @@ class EReader:
                     self.resetStream(currentLineStream)
                 # word split by newlines, add these individually
                 else:
-                    self.distributeTokensIntoLines(nwlnSplit,lines,currentLineStream)
+                    self.distributeTokensIntoLines(nwlnSplit,charactersPerLine,lines,currentLineStream)
             # split tokens that are too large into multiple tokens and add these individually
-            elif len(token) > self.charactersPerLine:
-                oversizedTokens = [token[x:x+self.charactersPerLine] for x in range(0,len(token),self.charactersPerLine)]
-                self.distributeTokensIntoLines(oversizedTokens,lines,currentLineStream)
+            elif len(token) > self.defaultCharactersPerLine:
+                oversizedTokens = [token[x:x+self.defaultCharactersPerLine-1]+'-' for x in range(0,len(token),self.defaultCharactersPerLine-1)]
+                self.distributeTokensIntoLines(oversizedTokens,charactersPerLine,lines,currentLineStream)
             # if appending the token (and the whitespace after) causes the line to overflow add the line and start a new one with the token
-            elif len(token)>0 and currentLineStream.tell()+len(token)+1> self.charactersPerLine:
+            elif len(token)>0 and currentLineStream.tell()+len(token)+1> self.defaultCharactersPerLine:
                 lines.append(currentLineStream.getvalue())
                 self.resetStream(currentLineStream)
                 currentLineStream.write(token) 
@@ -126,11 +141,12 @@ class EReader:
                     currentLineStream.write(token) 
                     currentLineStream.write(' ')
 
-    def paginateLines(self,lines):
+    def paginateLines(self,lines,linesPerPage):
         """
         paginates the given lines into a list of pages taking into account the maximum amount of lines allowed per screen
 
         :param lines: a list of lines containing the text
+        :param linesPerPage: number of lines allowed per page
 
         :return: a list of `pages` that themselves contain a list of lines per page (string[][])
         """
@@ -139,7 +155,7 @@ class EReader:
         lineIdx=0
         pageIdx=0
         for line in lines:
-            if lineIdx % self.linesPerScreen == 0:
+            if lineIdx % linesPerPage == 0:
                 pages.append([])
                 pageIdx+=1
 
@@ -166,24 +182,10 @@ class EReader:
         with open(bookmarksFilePath,"r") as bookmarksFile:
             bookmarks = json.load(bookmarksFile)
         
-        # for each title check if the bookmarks file exists and create an empty entry if it does not
-        modifiedBookmarks = False
-        for title in self.loadedTitles:
-            bookmarkExists = False
-            for bookmark in bookmarks["bookmarks"]:
-                if title["title"] in bookmark["title"]:
-                    bookmarkExists = True
-                    break 
-            if not bookmarkExists:
-                bookmarks["bookmarks"].append(self.createBookmark(title["title"],0,0))
-                modifiedBookmarks = True
-
-        # if the bookmarks where modified during the loading write them out again
-        if modifiedBookmarks:
-            with open(bookmarksFilePath,"w") as bookmarksFile:
-                json.dump(bookmarks,bookmarksFile)
-
         self.bookmarks = bookmarks["bookmarks"]
+
+
+
 
     def findBookmark(self,title):
         """
@@ -196,10 +198,25 @@ class EReader:
         for bookmark in self.bookmarks:
             if bookmark["title"] == title:
                 return bookmark
-        raise Exception(f"bookmark for title {title} not found")
+        
+        # not found, create and append a new bookmark
+        newBookmark = self.createBookmark(title,0,0,self.defaultCharactersPerLine,self.defaultLinesPerPage)
+        self.bookmarks.append(newBookmark)
 
- 
-    def createBookmark(self, title, chunkIdx, line):
+        # store the new bookmark in the file
+        self.saveBookmarks()
+
+        return newBookmark
+    
+    def saveBookmarks(self):
+        """
+        Stores the current bookmarks into the bookmarks file
+        """
+        bookmarksFilePath = self.userDataDirectory+"/"+BOOKMARKS_FILE_NAME
+        with open(bookmarksFilePath,"w") as bookmarksFile:
+            json.dump(self.bookmarks,bookmarksFile)
+        
+    def createBookmark(self, title, chunkIdx, pageIdx, charactersPerLine, linesPerPage):
         """
         Create a bookmark dictionary
 
@@ -208,7 +225,9 @@ class EReader:
         return {
             "title": title,
             "chunk-idx": chunkIdx,
-            "line": line
+            "page-idx": pageIdx,
+            "characters-per-line": charactersPerLine,
+            "lines-per-page": linesPerPage,
         }
 
                     
@@ -223,8 +242,8 @@ ereader = EReader(
 ereader.loadBookTitles()
 ereader.loadBook(0)    
 
-# print("----")
-# for line in ereader.currentPageViewLines:
-#     print(line)
+for page in ereader.viewPages:
+    for line in page:
+        print(line)
+    print("------------")
     
-ereader.paginatePageViewLines()
