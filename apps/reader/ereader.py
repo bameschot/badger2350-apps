@@ -184,9 +184,6 @@ class EReader:
         
         self.bookmarks = bookmarks["bookmarks"]
 
-
-
-
     def findBookmark(self,title):
         """
         finds a loaded bookmark by title
@@ -214,7 +211,7 @@ class EReader:
         """
         bookmarksFilePath = self.userDataDirectory+"/"+BOOKMARKS_FILE_NAME
         with open(bookmarksFilePath,"w") as bookmarksFile:
-            json.dump(self.bookmarks,bookmarksFile)
+            json.dump({"bookmarks":self.bookmarks},bookmarksFile)
         
     def createBookmark(self, title, chunkIdx, pageIdx, charactersPerLine, linesPerPage):
         """
