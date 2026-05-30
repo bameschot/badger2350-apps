@@ -70,6 +70,8 @@ def createMetadata(
 ):
     """
     Creates a metadata dictionary
+
+    :return: the Metadata as a json string
     """ 
     metaData = {
         "title": title        
@@ -102,6 +104,11 @@ def createChapter(idx,title,chunkStartIdx):
 def createChunk(inputBytes,chunkIdx):
     """
     Create a single chunk based on an input bytestream and encode the chunk index and gzip size with the compressed chunk data
+
+    :param inputBytes: the bytes to create a chunk for
+    :param chunkIdx: the index of the chunk that is created
+
+    :return: the chunk as bytes
     """ 
     chunkIdxBytes = chunkIdx.to_bytes(4)
     compressedBytes = compress(inputBytes)
@@ -126,6 +133,18 @@ def convertTxtFileToPicoBook(
     """
     Convert a input bytestream to a picobook outputstream.
     Allows setting the chunksize and authomatically adding chapters based on chunks
+
+    :param inputStream: the inputstream to convert into a picobook
+    :param outputStream: the outputstream to write the picobook into
+    :param title: title of the book
+    :param author: author of the book
+    :param publisher: publisher of the book
+    :param year: year of publication of the book
+    :param contentSizeBytes: The size in bytes of the input data that is turned into a single chunk
+    :param autoChapterFrequency: The number of chunks that are combined into a single chapter, does not autochapter if set to None
+    
+    :return: None
+     
     """ 
     chunkInfoDict = {
         "chunk-total": 0,
@@ -180,7 +199,13 @@ def convertTxtFileToPicoBook(
 
 def writePicoBook(picoBookStream,metaData,chunks):
     """
-    Write the provided meta data and chunks as a picobook outputstream adding the required headers
+    Write the provided meta data and chunks as a picobook output stream adding the required headers
+
+    :param picoBookStream: the outputstream to write the picobook to
+    :param metaData: the metadata json string
+    :param metaData: the list of chunks to include in the picobook
+    
+    :return: None
     """ 
     metaDataBytes = compress(bytes(metaData,PICOBOOK_STR_ENCODING)) 
     print(f"metadata: {metaData}")
@@ -200,7 +225,11 @@ def writePicoBook(picoBookStream,metaData,chunks):
 
 def readChunk(picoBookStream):
     """
-    Read and uncompress an individual chunk from the provided picobook stream
+    Read and uncompress an individual chunk from the provided picobook stream, assumes the stream is at the start position of a chunk
+
+    :param picoBookStream: the inputstream containing the picobook to read from
+
+    :return: the chunk's contents as a string
     """ 
     # read the chunk index and the size of the compressed dat in the chunk in bytes
     chunkIdx = int.from_bytes(picoBookStream.read(4))
@@ -214,8 +243,16 @@ def readChunk(picoBookStream):
 
 def readPicoBookHeader(picoBookStream,readMetaData=True):
     """
-    Read and uncompress the picobook header and meta data from the provided picobook stream
+    Read and uncompress the picobook header and meta data from the provided picobook stream, resets the stream
+
+    :param picoBookStream: the picobook input stream to read from
+    :param readMetaData: boolean to indicate if the metadata should be decoded
+
+    :return: a dictionary containing the `version`, `meta-data-size-bytes`, `chunk-start-index` and `meta-data` (if requested)
     """ 
+    # reset the stream 
+    picoBookStream.seek(0) 
+
     # read and validate the magic bytes
     picobookMagicBytes = picoBookStream.read(len(PICOBOOK_PICOBOOK_MAGIC_BYTES))
     if picobookMagicBytes != PICOBOOK_PICOBOOK_MAGIC_BYTES:
@@ -254,6 +291,10 @@ def readPicoBookHeader(picoBookStream,readMetaData=True):
 def readPicoBook(picoBookFilePath):
     """
     Read a picobook file in full and return the metadata and chunks in a dictionary
+
+    :param picoBookStream: the picobook input stream to read from
+
+    :return: a dictionary containing the `meta-data` and `text`
     """ 
     with open(picoBookFilePath,"rb") as picoBook:
 
@@ -271,6 +312,10 @@ def readPicoBook(picoBookFilePath):
 def readPicoBookMetaData(picoBookStream):
     """
     Read a picobook metadata from a given picobookstream
+
+    :param picoBookStream: the picobook input stream to read from
+
+    :return: the metadata
     """ 
     # read the picobook header
     return readPicoBookHeader(picoBookStream)["meta-data"]
@@ -280,6 +325,13 @@ def readPicoBookChunks(picoBookStream,metaData=None,chunkIdx=0,chunksToRead=None
     """
     Read the requested picobook chunk (range) from the given picobook stream. the stream provided is always reset before read. 
     If no metadata is provided the function will unzip and decode the metadata. if no range is provided the function reads the whole picobook.
+    
+    :param picoBookStream: the picobook input stream to read from
+    :param metaData: the meta data to use for finding the chunks to read, is read automatically if left empty
+    :param chunkIdx: the index of the first chunk to read (0 default)
+    :param chunkIdx: the number of chunks to read (all chunks if left empty)
+    
+    :return: the text of the requested chunks
     """ 
     # reset, function assumes it starts from the beginning of the file
     picoBookStream.seek(0)

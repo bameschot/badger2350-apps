@@ -30,6 +30,8 @@ class EReader:
     def loadBookTitles(self):
         """
         load a all titles available in the books directory and store them indexed with the path to the book
+
+        :return: None
         """ 
         for file in os.listdir(self.booksDirectory):
             if PICOBOOK_EXTENTION in file:
@@ -45,37 +47,58 @@ class EReader:
         print(self.loadedTitles)
         self.loadBookmarks()
     
-    def loadBook(self,idx):
+    def loadBook(self,bookIdx):
         """
         load a book based on the index of the loaded book and set the book the last read position from the bookmark
+
+        :param bookIdx: the index of the book in the loaded titles to load 
+
+        :return: None
         """ 
-        with open(self.loadedTitles[idx]["path"],"rb") as picobook:
+        with open(self.loadedTitles[bookIdx]["path"],"rb") as picobook:
             self.currentBookMetaData = readPicoBookMetaData(picobook)
-            self.currentBookmark = self.findBookmark(self.loadedTitles[idx]["title"])
-            self.setCurrentPageViewLinesFromText(
+            self.currentBookmark = self.findBookmark(self.loadedTitles[bookIdx]["title"])
+            self.readLinesFromText(
                 readPicoBookChunks(picobook, self.currentBookMetaData,self.currentBookmark["chunk-idx"],1)
             )
 
     def resetStream(self,stream):
         """
         clears and resets a given stream 
+        
+        :param stream: the stream to clear
+
+        :return: the cleared stream
+
         """ 
         stream.truncate(0)
         stream.seek(0)
+        return stream
 
-    def setCurrentPageViewLinesFromText(self,text):
+    def readLinesFromText(self,text):
         """
-        sets the page view lines based on the given raw text
-        """ 
-        del self.currentPageViewLines
-        self.currentPageViewLines = []
-        currentLine = io.StringIO()
-        self.distributeTokensIntoLines(text.split(' '),self.currentPageViewLines ,currentLine)        
+        reads the given text into lines taking into account the character width of the ereader
 
+        :param text: the text to parse into lines 
+
+        :return: a the text as a list of lines
+        """ 
+        lines = []
+        currentLine = io.StringIO()
+        self.distributeTokensIntoLines(text.split(' '),lines ,currentLine)
+        
+        return lines
     
+
     def distributeTokensIntoLines(self,tokens,lines,currentLineStream):
         """
-        Distributes a given whitespace tokenized text in lines taking into account the maximum line length
+        Distributes a given whitespace tokenized text in lines taking into account the maximum line length, lines are added to the lines paramer
+
+        :param tokens: a list of individual tokens (text split on ' ') that needs to be distrubuted across lines
+        :param lines: a list of lines to add the result lines to
+        :currentLineStream: a stream object that is used as a stringbuffer to add tokens to a line to
+
+        :return: None 
         """
         for token in tokens:
             # if there is a newline in the token split the token
@@ -103,9 +126,34 @@ class EReader:
                     currentLineStream.write(token) 
                     currentLineStream.write(' ')
 
+    def paginateLines(self,lines):
+        """
+        paginates the given lines into a list of pages taking into account the maximum amount of lines allowed per screen
+
+        :param lines: a list of lines containing the text
+
+        :return: a list of `pages` that themselves contain a list of lines per page (string[][])
+        """
+        pages = []
+        pages.append([])
+        lineIdx=0
+        pageIdx=0
+        for line in lines:
+            if lineIdx % self.linesPerScreen == 0:
+                pages.append([])
+                pageIdx+=1
+
+            pages[pageIdx].append(line)
+            lineIdx+=1
+        
+        return pages
+    
+
     def loadBookmarks(self):
         """
         load (and create if not exists) the bookmarks file and add a new bookmark for any title that does not exist yet
+
+        :return: None
         """
         bookmarksFilePath = self.userDataDirectory+"/"+BOOKMARKS_FILE_NAME
 
@@ -140,6 +188,10 @@ class EReader:
     def findBookmark(self,title):
         """
         finds a loaded bookmark by title
+
+        :param title: the title of the book to find the bookmark for 
+
+        :return: the Bookmark found
         """
         for bookmark in self.bookmarks:
             if bookmark["title"] == title:
@@ -150,19 +202,14 @@ class EReader:
     def createBookmark(self, title, chunkIdx, line):
         """
         Create a bookmark dictionary
+
+        :return: the Bookmark dictionary
         """
         return {
             "title": title,
             "chunk-idx": chunkIdx,
             "line": line
         }
-    
-    def nextPage(self):
-        currentLine = self.currentBookmark["line"]
-        
-
-    def previousPage(self):
-        pass
 
                     
 
@@ -170,13 +217,14 @@ ereader = EReader(
     "./apps/reader/books",
     "./apps/reader/user-data",
     10,
-    80
+    70
 )
 
 ereader.loadBookTitles()
 ereader.loadBook(0)    
 
-print("----")
-for line in ereader.currentPageViewLines:
-    print(line)
+# print("----")
+# for line in ereader.currentPageViewLines:
+#     print(line)
     
+ereader.paginatePageViewLines()
