@@ -251,22 +251,42 @@ class EReader:
 
         :return: returns True if the book advanced to the next page and False if you reached the end of the book 
         """
-        currentPageIdx = self.currentBookmark["page-idx"]
-
         # next page is outside of the loaded viewpages, load the next block
-        if currentPageIdx+1 >= len(self.viewPages):
-            self.currentBookmark["chunk-idx"]+=1
-            if self.currentBookmark["chunk-idx"] >= self.currentBookMetaData["chunk-info"]["chunk-total"]:
+        if self.currentBookmark["page-idx"]+1 >= len(self.viewPages):
+            if self.currentBookmark["chunk-idx"]+1 >= self.currentBookMetaData["chunk-info"]["chunk-total"]:
                 print('last chunk reached')
                 return False
+            
+            self.currentBookmark["chunk-idx"]+=1
+            self.loadBookChunk(self.currentBookmark["chunk-idx"],self.currentBookMetaData)
 
             self.currentBookmark["page-idx"]=0
-
-            self.loadBookChunk(self.currentBookmark["chunk-idx"],self.currentBookMetaData)
         else:
             self.currentBookmark["page-idx"]+=1
-        print(f'page: {self.currentBookmark["page-idx"]}')
-        print(f'chunk: {self.currentBookmark["chunk-idx"]}')
+
+        print(f" p:{self.currentBookmark["page-idx"]} c:{self.currentBookmark["chunk-idx"]}")
+        return True
+    
+    def previousPage(self):
+        """
+        Go back to the previous page. If there are no pages left in the current page view then load the next chunk.
+
+        :return: returns True if the book advanced to the next page and False if you reached the start of the book 
+        """
+        # next page is outside of the loaded viewpages, load the next block and reset the page index
+        if self.currentBookmark["page-idx"]-1 < 0:
+            if self.currentBookmark["chunk-idx"]-1 < 0:
+                print('first chunk reached')
+                return False
+
+            self.currentBookmark["chunk-idx"]-=1
+            self.loadBookChunk(self.currentBookmark["chunk-idx"],self.currentBookMetaData)
+
+            self.currentBookmark["page-idx"]= len(self.viewPages)-1
+        else:
+            self.currentBookmark["page-idx"]-=1
+
+        print(f" p:{self.currentBookmark["page-idx"]} c:{self.currentBookmark["chunk-idx"]}")
         return True
 
     
@@ -296,6 +316,12 @@ while ereader.nextPage():
     for line in ereader.currentPageLines():
         print(line)
     print("------------")
+
+
+while ereader.previousPage():
+    for line in ereader.currentPageLines():
+        print(line)
+    print("++++++++++++")
 
 
 # for page in ereader.viewPages:
