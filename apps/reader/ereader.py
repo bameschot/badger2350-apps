@@ -320,6 +320,24 @@ class EReader:
 
         self.saveBookmarks()
 
+    def jumpToChapter(self, chapterIdx):
+        """
+        Jump to the first page of the chunk for that chapter registered in the book meta data.
+
+        :param chapterIdx: the index of the chapter to run to
+
+        :return: None 
+        """
+        if chapterIdx < 0 and chapterIdx>=len(self.currentBookMetaData["chapters"]):
+            raise Exception(f"requested {chapterIdx} is out of range {len(self.currentBookMetaData["chapters"])}")
+
+        chapterStartChunkIdx = self.currentBookMetaData["chapters"][chapterIdx]["chunk-start-idx"]
+
+        self.loadBookChunk(chapterStartChunkIdx,self.currentBookMetaData)
+        self.currentBookmark["page-idx"] = 0
+        self.currentBookmark["chunk-idx"] = chapterStartChunkIdx
+
+        self.saveBookmarks()
                     
 
 ereader = EReader(
@@ -334,6 +352,7 @@ ereader.loadBook(0)
 
 print(f's {ereader.currentBookmark}')
 
+ereader.jumpToChapter(3)
 
 ereader.resizeScreen(30,20)
 for line in ereader.currentPageLines():

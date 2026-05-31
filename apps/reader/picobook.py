@@ -208,7 +208,6 @@ def writePicoBook(picoBookStream,metaData,chunks):
     :return: None
     """ 
     metaDataBytes = compress(bytes(metaData,PICOBOOK_STR_ENCODING)) 
-    print(f"metadata: {metaData}")
 
     # calculate the start of the chunk section (add 8 for the meta data size and chunk start index integers itself)
     startChunkByteIdx = len(PICOBOOK_PICOBOOK_MAGIC_BYTES) +len(PICOBOOK_PICOBOOK_VERSION_BYTES)+len(metaDataBytes)+8
@@ -235,8 +234,6 @@ def readChunk(picoBookStream):
     chunkIdx = int.from_bytes(picoBookStream.read(4))
     compressedSizeBytes = int.from_bytes(picoBookStream.read(4))
 
-    print(f"read chunk: {chunkIdx:06d} compressed size: {compressedSizeBytes:08d}b")
-
     # decompress the data and turn it into a string
     chunkBytes = decompress(picoBookStream.read(compressedSizeBytes))
     return chunkBytes.decode(PICOBOOK_STR_ENCODING,"replace")
@@ -260,15 +257,12 @@ def readPicoBookHeader(picoBookStream,readMetaData=True):
         
     # read the version
     picobookVersion = int.from_bytes(picoBookStream.read(2))
-    print(f"version: {picobookVersion}")
 
     # read the metadata size
     metaDataSizeInBytes = int.from_bytes(picoBookStream.read(4))
-    print(f"meta data size (bytes): {metaDataSizeInBytes}")
 
     # read the chunk start position
     chunkStartIdx = int.from_bytes(picoBookStream.read(4))
-    print(f"chunk start idx: {chunkStartIdx}")
 
     # read and decompress the metadata
     if readMetaData:
@@ -277,7 +271,6 @@ def readPicoBookHeader(picoBookStream,readMetaData=True):
         # just skip over the bytes
         picoBookStream.read(metaDataSizeInBytes)
         metaData = None
-    print(f"meta data: {metaData}")
 
 
     return {
