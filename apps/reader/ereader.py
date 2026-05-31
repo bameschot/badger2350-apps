@@ -340,32 +340,32 @@ class EReader:
         self.saveBookmarks()
                     
 
-ereader = EReader(
-    "./apps/reader/books",
-    "./apps/reader/user-data",
-    10,
-    30
-)
+# ereader = EReader(
+#     "./apps/reader/books",
+#     "./apps/reader/user-data",
+#     10,
+#     30
+# )
 
-ereader.loadBookTitles()
-ereader.loadBook(0)
+# ereader.loadBookTitles()
+# ereader.loadBook(0)
 
 
-print(f's {ereader.currentBookMetaData}')
+# print(f's {ereader.currentBookMetaData}')
 
-print(f's {ereader.currentBookmark}')
+# print(f's {ereader.currentBookmark}')
 
-ereader.jumpToChapter(3)
+# ereader.jumpToChapter(3)
 
-ereader.resizeScreen(30,20)
-for line in ereader.currentPageLines():
-        print(line)
-print("----///-----")
+# ereader.resizeScreen(30,20)
+# for line in ereader.currentPageLines():
+#         print(line)
+# print("----///-----")
 
-ereader.resizeScreen(90,10)
-for line in ereader.currentPageLines():
-        print(line)
-print("----+++-----")
+# ereader.resizeScreen(90,10)
+# for line in ereader.currentPageLines():
+#         print(line)
+# print("----+++-----")
 
 # while True:
 #     for line in ereader.currentPageLines():
