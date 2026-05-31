@@ -133,7 +133,8 @@ class EReader:
         :return: None 
         """
         for token in tokens:
-            token = token.replace('\r','')
+            if '\r' in token:
+                token = token.replace('\r','')
             # skip empty tokens
             if len(token) == 0:
                 pass

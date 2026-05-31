@@ -37,17 +37,20 @@ def main(stdscr):
         lineIdx = 0
 
         for line in ereader.currentPageLines():
-            mainWindow.addstr(lineIdx, 0, line)
+            try:
+                mainWindow.addstr(lineIdx, 0, line)
+            except:
+                pass
             lineIdx+=1
 
         mainWindow.refresh()
         
         title = ereader.currentBookmark["title"]
-        pageIdx = ereader.currentBookmark["chunk-idx"]
-        chunkIdx = ereader.currentBookmark["page-idx"]
+        pageIdx = ereader.currentBookmark["page-idx"]
+        chunkIdx = ereader.currentBookmark["chunk-idx"]
         
 
-        statusWindow.addstr(0, 0, f' title: {title} page: {pageIdx:04d} chunk: {chunkIdx:04d}',color_pair(1))
+        statusWindow.addstr(0, 0, f'[title: {title}; page: {pageIdx:04d}; chunk: {chunkIdx:04d}]',color_pair(1))
         statusWindow.refresh()
 
         inp = mainWindow.getch()
