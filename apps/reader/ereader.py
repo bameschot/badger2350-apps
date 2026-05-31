@@ -133,8 +133,12 @@ class EReader:
         :return: None 
         """
         for token in tokens:
+            token = token.replace('\r','')
+            # skip empty tokens
+            if len(token) == 0:
+                pass
             # if there is a newline in the token split the token
-            if '\n' in token:
+            elif '\n' in token:
                 nwlnSplit = token.split('\n')
                 # just a single newline 
                 if len(nwlnSplit) == 0:
@@ -148,15 +152,15 @@ class EReader:
                 oversizedTokens = [token[x:x+charactersPerLine-1]+'-' for x in range(0,len(token),charactersPerLine-1)]
                 self.distributeTokensIntoLines(oversizedTokens,charactersPerLine,lines,currentLineStreamContainer)
             # if appending the token (and the whitespace after) causes the line to overflow add the line and start a new one with the token
-            elif len(token)>0 and currentLineStreamContainer[0].tell()+len(token)+1> charactersPerLine:
+            elif currentLineStreamContainer[0].tell()+len(token)+1> charactersPerLine:
                 lines.append(currentLineStreamContainer[0].getvalue())
                 self.resetStream(currentLineStreamContainer)
                 currentLineStreamContainer[0].write(token) 
                 currentLineStreamContainer[0].write(' ') 
             # otherwise just add the token
-            elif len(token)>0:
-                    currentLineStreamContainer[0].write(token) 
-                    currentLineStreamContainer[0].write(' ')
+            else:
+                currentLineStreamContainer[0].write(token) 
+                currentLineStreamContainer[0].write(' ')
 
     def paginateLines(self,lines,linesPerPage):
         """
@@ -352,14 +356,13 @@ class EReader:
 
 
 # print(f's {ereader.currentBookMetaData}')
-
 # print(f's {ereader.currentBookmark}')
 
 # ereader.jumpToChapter(3)
 
-# ereader.resizeScreen(30,20)
+# ereader.resizeScreen(70,20)
 # for line in ereader.currentPageLines():
-#         print(line)
+#     print(line)
 # print("----///-----")
 
 # ereader.resizeScreen(90,10)

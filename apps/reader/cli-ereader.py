@@ -24,6 +24,8 @@ def main(stdscr):
 
     ereader.loadBookTitles()
     ereader.loadBook(0)
+    ereader.resizeScreen(applicationWidth,mainWindowHeight)
+    init_pair(1, COLOR_RED, COLOR_BLACK)
     
 
     # This raises ZeroDivisionError when i == 10.
@@ -33,15 +35,22 @@ def main(stdscr):
         statusWindow.clear()
         
         lineIdx = 0
+
         for line in ereader.currentPageLines():
             mainWindow.addstr(lineIdx, 0, line)
             lineIdx+=1
 
         mainWindow.refresh()
-        inp = mainWindow.getch()
-        statusWindow.addstr(0, 0, str(ereader.currentBookmark))
+        
+        title = ereader.currentBookmark["title"]
+        pageIdx = ereader.currentBookmark["chunk-idx"]
+        chunkIdx = ereader.currentBookmark["page-idx"]
+        
+
+        statusWindow.addstr(0, 0, f' title: {title} page: {pageIdx:04d} chunk: {chunkIdx:04d}',color_pair(1))
         statusWindow.refresh()
 
+        inp = mainWindow.getch()
         if inp == KEY_RIGHT:
             ereader.nextPage()
         elif inp == KEY_LEFT:
