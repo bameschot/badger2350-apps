@@ -92,18 +92,18 @@ class EReader:
                 ),self.currentBookmark["lines-per-page"]
             )
 
-    def resetStream(self,stream):
+    def resetStream(self,streamContainer):
         """
         clears and resets a given stream 
         
-        :param stream: the stream to clear
+        :param streamContainer: the container containing the stream to reset
 
-        :return: the cleared stream
+        :return: the container with a reset stream
 
         """ 
-        stream.truncate(0)
-        stream.seek(0)
-        return stream
+        del streamContainer[0]
+        streamContainer.append(io.StringIO())
+        return streamContainer
 
     def readLinesFromText(self,text,charactersPerLine):
         """
@@ -115,20 +115,20 @@ class EReader:
         :return: a the text as a list of lines
         """ 
         lines = []
-        currentLine = io.StringIO()
+        currentLine = [io.StringIO()]
         self.distributeTokensIntoLines(text.split(' '),charactersPerLine,lines ,currentLine)
         
         return lines
     
 
-    def distributeTokensIntoLines(self,tokens,charactersPerLine,lines,currentLineStream):
+    def distributeTokensIntoLines(self,tokens,charactersPerLine,lines,currentLineStreamContainer):
         """
         Distributes a given whitespace tokenized text in lines taking into account the maximum line length, lines are added to the lines paramer
 
         :param tokens: a list of individual tokens (text split on ' ') that needs to be distrubuted across lines
         :param charactersPerLine: the number of characters allowed per line
         :param lines: a list of lines to add the result lines to
-        :currentLineStream: a stream object that is used as a stringbuffer to add tokens to a line to
+        :currentLineStreamContainer: a list containing stream object that is used as a stringbuffer to add tokens to a line to
 
         :return: None 
         """
@@ -138,25 +138,25 @@ class EReader:
                 nwlnSplit = token.split('\n')
                 # just a single newline 
                 if len(nwlnSplit) == 0:
-                    lines.append(currentLineStream.getvalue())
-                    self.resetStream(currentLineStream)
+                    lines.append(currentLineStreamContainer[0].getvalue())
+                    self.resetStream(currentLineStreamContainer)
                 # word split by newlines, add these individually
                 else:
-                    self.distributeTokensIntoLines(nwlnSplit,charactersPerLine,lines,currentLineStream)
+                    self.distributeTokensIntoLines(nwlnSplit,charactersPerLine,lines,currentLineStreamContainer)
             # split tokens that are too large into multiple tokens and add these individually
             elif len(token) > charactersPerLine:
                 oversizedTokens = [token[x:x+charactersPerLine-1]+'-' for x in range(0,len(token),charactersPerLine-1)]
-                self.distributeTokensIntoLines(oversizedTokens,charactersPerLine,lines,currentLineStream)
+                self.distributeTokensIntoLines(oversizedTokens,charactersPerLine,lines,currentLineStreamContainer)
             # if appending the token (and the whitespace after) causes the line to overflow add the line and start a new one with the token
-            elif len(token)>0 and currentLineStream.tell()+len(token)+1> charactersPerLine:
-                lines.append(currentLineStream.getvalue())
-                self.resetStream(currentLineStream)
-                currentLineStream.write(token) 
-                currentLineStream.write(' ') 
+            elif len(token)>0 and currentLineStreamContainer[0].tell()+len(token)+1> charactersPerLine:
+                lines.append(currentLineStreamContainer[0].getvalue())
+                self.resetStream(currentLineStreamContainer)
+                currentLineStreamContainer[0].write(token) 
+                currentLineStreamContainer[0].write(' ') 
             # otherwise just add the token
             elif len(token)>0:
-                    currentLineStream.write(token) 
-                    currentLineStream.write(' ')
+                    currentLineStreamContainer[0].write(token) 
+                    currentLineStreamContainer[0].write(' ')
 
     def paginateLines(self,lines,linesPerPage):
         """
@@ -190,8 +190,8 @@ class EReader:
         """
         bookmarksFilePath = self.userDataDirectory+"/"+BOOKMARKS_FILE_NAME
 
-        # check if the file exists, and if not create a new one
-        if not os.path.exists(bookmarksFilePath):
+        # check if the file exists, and if not create a new one        
+        if not BOOKMARKS_FILE_NAME in os.listdir(self.userDataDirectory):
             with open(bookmarksFilePath,"w") as bookmarksFile:
                 json.dump({"bookmarks":[]},bookmarksFile)
 
@@ -324,7 +324,7 @@ class EReader:
         """
         Jump to the first page of the chunk for that chapter registered in the book meta data.
 
-        :param chapterIdx: the index of the chapter to run to
+        :param chapterIdx: the index of the chapter to jump to
 
         :return: None 
         """
