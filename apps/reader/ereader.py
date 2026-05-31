@@ -350,6 +350,9 @@ ereader = EReader(
 ereader.loadBookTitles()
 ereader.loadBook(0)
 
+
+print(f's {ereader.currentBookMetaData}')
+
 print(f's {ereader.currentBookmark}')
 
 ereader.jumpToChapter(3)

@@ -355,9 +355,9 @@ def readPicoBookChunks(picoBookStream,metaData=None,chunkIdx=0,chunksToRead=None
             
 
 # write
-# with open('./king-in-yellow.txt', "rb") as inputFile:
-#     with open('./king-in-yellow.pb', "wb") as outputFile:
-#         convertTxtFileToPicoBook(inputFile,outputFile,'king in yellow')
+# with open('./apps/reader/books/wealth-of-nations.txt', "rb") as inputFile:
+#     with open('./apps/reader/books/wealth-of-nations.pb', "wb") as outputFile:
+#         convertTxtFileToPicoBook(inputFile,outputFile,'Wealth of Nations',"Adam Smith")
 
 
 # read
