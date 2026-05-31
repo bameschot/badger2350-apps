@@ -1,4 +1,5 @@
 import os
+import math 
 
 from picobook import *
 
@@ -24,12 +25,11 @@ class EReader:
         self.loadedTitles = []
         self.bookmarks = None
         
-        self.viewPages = None
 
         self.currentBookIdx = None
         self.currentBookmark = None
         self.currentBookMetaData = None
-
+        self.currentViewPages = None
 
     def loadBookTitles(self):
         """
@@ -48,7 +48,6 @@ class EReader:
                     })
                 del metaData
             
-        print(self.loadedTitles)
         self.loadBookmarks()
     
     def loadBook(self,bookIdx):
@@ -86,7 +85,7 @@ class EReader:
         with open(self.loadedTitles[self.currentBookIdx]["path"],"rb") as picobook:
 
             # load the bookmarked chunk and paginate it according to the bookmark's settings
-            self.viewPages = self.paginateLines(
+            self.currentViewPages = self.paginateLines(
                 self.readLinesFromText(
                     readPicoBookChunks(picobook, metadata, chunkIdx,1),
                     self.currentBookmark["characters-per-line"]
@@ -145,11 +144,11 @@ class EReader:
                 else:
                     self.distributeTokensIntoLines(nwlnSplit,charactersPerLine,lines,currentLineStream)
             # split tokens that are too large into multiple tokens and add these individually
-            elif len(token) > self.defaultCharactersPerLine:
-                oversizedTokens = [token[x:x+self.defaultCharactersPerLine-1]+'-' for x in range(0,len(token),self.defaultCharactersPerLine-1)]
+            elif len(token) > charactersPerLine:
+                oversizedTokens = [token[x:x+charactersPerLine-1]+'-' for x in range(0,len(token),charactersPerLine-1)]
                 self.distributeTokensIntoLines(oversizedTokens,charactersPerLine,lines,currentLineStream)
             # if appending the token (and the whitespace after) causes the line to overflow add the line and start a new one with the token
-            elif len(token)>0 and currentLineStream.tell()+len(token)+1> self.defaultCharactersPerLine:
+            elif len(token)>0 and currentLineStream.tell()+len(token)+1> charactersPerLine:
                 lines.append(currentLineStream.getvalue())
                 self.resetStream(currentLineStream)
                 currentLineStream.write(token) 
@@ -252,9 +251,8 @@ class EReader:
         :return: returns True if the book advanced to the next page and False if you reached the end of the book 
         """
         # next page is outside of the loaded viewpages, load the next block
-        if self.currentBookmark["page-idx"]+1 >= len(self.viewPages):
+        if self.currentBookmark["page-idx"]+1 >= len(self.currentViewPages):
             if self.currentBookmark["chunk-idx"]+1 >= self.currentBookMetaData["chunk-info"]["chunk-total"]:
-                print('last chunk reached')
                 return False
             
             self.currentBookmark["chunk-idx"]+=1
@@ -264,7 +262,7 @@ class EReader:
         else:
             self.currentBookmark["page-idx"]+=1
 
-        print(f" p:{self.currentBookmark["page-idx"]} c:{self.currentBookmark["chunk-idx"]}")
+        self.saveBookmarks()
         return True
     
     def previousPage(self):
@@ -276,17 +274,16 @@ class EReader:
         # next page is outside of the loaded viewpages, load the next block and reset the page index
         if self.currentBookmark["page-idx"]-1 < 0:
             if self.currentBookmark["chunk-idx"]-1 < 0:
-                print('first chunk reached')
                 return False
 
             self.currentBookmark["chunk-idx"]-=1
             self.loadBookChunk(self.currentBookmark["chunk-idx"],self.currentBookMetaData)
 
-            self.currentBookmark["page-idx"]= len(self.viewPages)-1
+            self.currentBookmark["page-idx"]= len(self.currentViewPages)-1
         else:
             self.currentBookmark["page-idx"]-=1
 
-        print(f" p:{self.currentBookmark["page-idx"]} c:{self.currentBookmark["chunk-idx"]}")
+        self.saveBookmarks()
         return True
 
     
@@ -296,7 +293,32 @@ class EReader:
 
         :return: a list of the lines
         """
-        return self.viewPages[self.currentBookmark["page-idx"]]
+        return self.currentViewPages[self.currentBookmark["page-idx"]]
+    
+
+    def resizeScreen(self,newCharactersPerLine, newLinesPerPage):
+        """
+        Resize the screen to the new characters per line and lines per page. This reloads the chunk and repaginates it. 
+        The new page index is calculated to approximate the old page index for the old screen size
+
+        :param newCharactersPerLine: the new amount of characters allowed per line
+        :param newLinesPerPage: the new lines per page allowed
+
+        :return: None
+        """
+        oldPageIdx =  self.currentBookmark["page-idx"] 
+        oldChunkPageCount =  len(self.currentViewPages)
+
+        self.currentBookmark["characters-per-line"] = newCharactersPerLine
+        self.currentBookmark["lines-per-page"] = newLinesPerPage
+
+        self.loadBookChunk(self.currentBookmark["chunk-idx"],self.currentBookMetaData)
+        newChunkPageCount =  len(self.currentViewPages)
+        newPageIdx =  math.floor((newChunkPageCount/oldChunkPageCount)*oldPageIdx)
+
+        self.currentBookmark["page-idx"] = newPageIdx 
+
+        self.saveBookmarks()
 
                     
 
@@ -304,29 +326,44 @@ ereader = EReader(
     "./apps/reader/books",
     "./apps/reader/user-data",
     10,
-    70
+    30
 )
 
 ereader.loadBookTitles()
-ereader.loadBook(0)    
-#ereader.nextPage()
+ereader.loadBook(0)
+
+print(f's {ereader.currentBookmark}')
 
 
-while ereader.nextPage():
-    for line in ereader.currentPageLines():
+ereader.resizeScreen(30,20)
+for line in ereader.currentPageLines():
         print(line)
-    print("------------")
+print("----///-----")
 
-
-while ereader.previousPage():
-    for line in ereader.currentPageLines():
+ereader.resizeScreen(90,10)
+for line in ereader.currentPageLines():
         print(line)
-    print("++++++++++++")
+print("----+++-----")
 
-
-# for page in ereader.viewPages:
-#     for line in page:
+# while True:
+#     for line in ereader.currentPageLines():
 #         print(line)
-#     print("------------")
+#     print("----+++-----")
+#     if not ereader.nextPage():
+#         break
+
+# ereader.resizeScreen(90,10)
+# while True:
+#     for line in ereader.currentPageLines():
+#         print(line)
+#     print("-----///----")
+#     if not ereader.nextPage():
+#         break
+
+
+# while ereader.previousPage():
+#     for line in ereader.currentPageLines():
+#         print(line)
+#     print("++++++++++++")
 
     
