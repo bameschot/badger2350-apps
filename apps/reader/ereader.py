@@ -23,9 +23,10 @@ class EReader:
 
         self.loadedTitles = []
         self.bookmarks = None
-
+        
         self.viewPages = None
 
+        self.currentBookIdx = None
         self.currentBookmark = None
         self.currentBookMetaData = None
 
@@ -61,6 +62,8 @@ class EReader:
         # open the file indicated by the index
         with open(self.loadedTitles[bookIdx]["path"],"rb") as picobook:
 
+            self.currentBookIdx = bookIdx
+
             # load the book's bookmark based on the tile
             self.currentBookmark = self.findBookmark(self.loadedTitles[bookIdx]["title"])
 
@@ -68,9 +71,24 @@ class EReader:
             self.currentBookMetaData = readPicoBookMetaData(picobook)
 
             # load the bookmarked chunk and paginate it according to the bookmark's settings
+            self.loadBookChunk(self.currentBookmark["chunk-idx"],self.currentBookMetaData)
+            
+
+    def loadBookChunk(self,chunkIdx,metadata=None):
+        """
+        load a book based on the index of the loaded book and set the book the last read position from the bookmark
+
+        :param bookIdx: the index of the book in the loaded titles to load 
+
+        :return: None
+        """ 
+        # open the file indicated by the index
+        with open(self.loadedTitles[self.currentBookIdx]["path"],"rb") as picobook:
+
+            # load the bookmarked chunk and paginate it according to the bookmark's settings
             self.viewPages = self.paginateLines(
                 self.readLinesFromText(
-                    readPicoBookChunks(picobook, self.currentBookMetaData,self.currentBookmark["chunk-idx"],1),
+                    readPicoBookChunks(picobook, metadata, chunkIdx,1),
                     self.currentBookmark["characters-per-line"]
                 ),self.currentBookmark["lines-per-page"]
             )
@@ -155,7 +173,7 @@ class EReader:
         lineIdx=0
         pageIdx=0
         for line in lines:
-            if lineIdx % linesPerPage == 0:
+            if lineIdx > 0 and lineIdx % linesPerPage == 0:
                 pages.append([])
                 pageIdx+=1
 
@@ -226,6 +244,39 @@ class EReader:
             "characters-per-line": charactersPerLine,
             "lines-per-page": linesPerPage,
         }
+    
+    def nextPage(self):
+        """
+        Advance to the next page. If there are no pages left in the current page view then load the next chunk.
+
+        :return: returns True if the book advanced to the next page and False if you reached the end of the book 
+        """
+        currentPageIdx = self.currentBookmark["page-idx"]
+
+        # next page is outside of the loaded viewpages, load the next block
+        if currentPageIdx+1 >= len(self.viewPages):
+            self.currentBookmark["chunk-idx"]+=1
+            if self.currentBookmark["chunk-idx"] >= self.currentBookMetaData["chunk-info"]["chunk-total"]:
+                print('last chunk reached')
+                return False
+
+            self.currentBookmark["page-idx"]=0
+
+            self.loadBookChunk(self.currentBookmark["chunk-idx"],self.currentBookMetaData)
+        else:
+            self.currentBookmark["page-idx"]+=1
+        print(f'page: {self.currentBookmark["page-idx"]}')
+        print(f'chunk: {self.currentBookmark["chunk-idx"]}')
+        return True
+
+    
+    def currentPageLines(self):
+        """
+        Returns the text lines belonging to the current page
+
+        :return: a list of the lines
+        """
+        return self.viewPages[self.currentBookmark["page-idx"]]
 
                     
 
@@ -238,9 +289,18 @@ ereader = EReader(
 
 ereader.loadBookTitles()
 ereader.loadBook(0)    
+#ereader.nextPage()
 
-for page in ereader.viewPages:
-    for line in page:
+
+while ereader.nextPage():
+    for line in ereader.currentPageLines():
         print(line)
     print("------------")
+
+
+# for page in ereader.viewPages:
+#     for line in page:
+#         print(line)
+#     print("------------")
+
     

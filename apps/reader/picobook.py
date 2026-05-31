@@ -33,7 +33,7 @@ else:
 #           -> idx
 #			-> title
 #			-> chunk-start-idx    
-#  -> [chunks]
+#  -> [chunk-info]
 #  		-> chunk-total
 #  		-> content-size-bytes
 #       -> chunk-start-positions list:int
