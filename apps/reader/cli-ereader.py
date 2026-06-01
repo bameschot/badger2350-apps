@@ -108,11 +108,20 @@ def readerWindow(mainWindow,statusWindow,ereader:EReader):
         elif inp == "KEY_LEFT":
             ereader.previousPage()
         elif inp == 'C':
-            chapterWindow(mainWindow,statusWindow,ereader)
+            selectedChapterIdx = chapterWindow(mainWindow,statusWindow,ereader)
+            if selectedChapterIdx != None:
+                ereader.jumpToChapter(selectedChapterIdx)
         elif inp == 'E':
             return
 
 def chapterWindow(mainWindow,statusWindow,ereader:EReader):
+    selectedIdx = 0
+
+    # update status window
+    statusWindow.clear()
+    statusWindow.addstr(0, 0 ,f' E = exit, S = Select',COLOR_PAIR_RED_BLACK)
+    statusWindow.refresh()
+
     while True:
 
         # write the current page to the main screen
@@ -120,7 +129,11 @@ def chapterWindow(mainWindow,statusWindow,ereader:EReader):
         chapterIdx = 0
         for chapter in ereader.currentBookMetaData["chapters"]:
             try:
-                mainWindow.addstr(chapterIdx, 0, chapter["title"],COLOR_PAIR_WHITE_BLACK)
+                isSelected = chapterIdx == selectedIdx
+                colorPair = color_pair(COLOR_PAIR_GREEN_BLACK) if isSelected else color_pair(COLOR_PAIR_WHITE_BLACK)
+                prefix = "->" if isSelected else "* "
+
+                mainWindow.addstr(chapterIdx, 0, f'{prefix} {chapter["title"]}',colorPair)
             except:
                 pass
             chapterIdx+=1
@@ -130,11 +143,13 @@ def chapterWindow(mainWindow,statusWindow,ereader:EReader):
 
         # wait for input and determine to do what next
         inp = mainWindow.getkey()
-        if inp == "KEY_RIGHT":
-            ereader.nextPage()
-        elif inp == "KEY_LEFT":
-            ereader.previousPage()
+        if inp == "KEY_UP":
+            selectedIdx = max(selectedIdx-1,0)
+        elif inp == "KEY_DOWN":
+            selectedIdx = min(selectedIdx+1,len(ereader.currentBookMetaData["chapters"])-1)
+        elif inp == 'S':
+            return selectedIdx
         elif inp == 'E':
-            return
+            return None
 
 wrapper(main)
